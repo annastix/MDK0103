@@ -5,13 +5,14 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
+// Основная типография Material 3
 val Typography = Typography(
     // Heading стили
     headlineLarge = TextStyle(
         fontFamily = Raleway,
         fontWeight = FontWeight.Normal,
         fontSize = 34.sp,
-        lineHeight = 40.sp,
+        lineHeight = 44.sp,
         letterSpacing = 0.sp
     ),
     headlineMedium = TextStyle(
@@ -65,6 +66,15 @@ val Typography = Typography(
         lineHeight = 26.sp,
         letterSpacing = 0.sp
     ),
+    bodySmall = TextStyle(
+        fontFamily = Raleway,
+        fontWeight = FontWeight.Normal,
+        fontSize = 16.sp,
+        lineHeight = 22.sp,
+        letterSpacing = 0.sp
+    ),
+
+    // Label/Button стили
     labelLarge = TextStyle(
         fontFamily = Raleway,
         fontWeight = FontWeight.SemiBold,
@@ -79,130 +89,37 @@ val Typography = Typography(
         lineHeight = 22.sp,
         letterSpacing = 0.sp
     ),
-    bodySmall = TextStyle(
+    labelSmall = TextStyle(
         fontFamily = Raleway,
-        fontWeight = FontWeight.Normal,
-        fontSize = 16.sp,
-        lineHeight = 22.sp,
+        fontWeight = FontWeight.Medium,
+        fontSize = 14.sp,
+        lineHeight = 20.sp,
         letterSpacing = 0.sp
     ),
 
-    // Subtitle и другие
-    displayMedium = TextStyle( // Используем displayMedium для subtitle
+    // Display для дополнительных стилей
+    displayMedium = TextStyle(
         fontFamily = Raleway,
         fontWeight = FontWeight.Normal,
-        fontSize = 16.sp,
-        lineHeight = 22.sp,
+        fontSize = 14.sp,
+        lineHeight = 20.sp,
         letterSpacing = 0.sp
     ),
     displaySmall = TextStyle(
         fontFamily = Raleway,
-        fontWeight = FontWeight.Medium,
-        fontSize = 14.sp,
-        lineHeight = 20.sp,
-        letterSpacing = 0.sp
-    ),
-    labelSmall = TextStyle(
-        fontFamily = Raleway,
         fontWeight = FontWeight.Normal,
-        fontSize = 14.sp,
-        lineHeight = 20.sp,
+        fontSize = 12.sp,
+        lineHeight = 18.sp,
         letterSpacing = 0.sp
     )
 )
 
-// Дополнительные кастомные стили, если нужно
+// Дополнительные кастомные стили только для тех, которые не вписываются в Material 3
 object AppTypography {
-    // Heading стили
-    val headingRegular34 = TextStyle(
-        fontFamily = Raleway,
-        fontWeight = FontWeight.Normal,
-        fontSize = 34.sp
-    )
-
-    val headingRegular32 = TextStyle(
-        fontFamily = Raleway,
-        fontWeight = FontWeight.Normal,
-        fontSize = 32.sp
-    )
-
-    val headingBold30 = TextStyle(
-        fontFamily = Raleway,
-        fontWeight = FontWeight.Bold,
-        fontSize = 30.sp
-    )
-
-    val headingRegular26 = TextStyle(
-        fontFamily = Raleway,
-        fontWeight = FontWeight.Normal,
-        fontSize = 26.sp
-    )
-
-    val headingRegular20 = TextStyle(
-        fontFamily = Raleway,
-        fontWeight = FontWeight.Normal,
-        fontSize = 20.sp
-    )
-
-    val headingSemiBold16 = TextStyle(
-        fontFamily = Raleway,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 16.sp
-    )
-
-    // Body стили
-    val bodyRegular24 = TextStyle(
-        fontFamily = Raleway,
-        fontWeight = FontWeight.Normal,
-        fontSize = 24.sp
-    )
-
-    val bodyRegular20 = TextStyle(
-        fontFamily = Raleway,
-        fontWeight = FontWeight.Normal,
-        fontSize = 20.sp
-    )
-
-    val bodySemiBold18 = TextStyle(
-        fontFamily = Raleway,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 18.sp
-    )
-
-    val bodyMedium16 = TextStyle(
-        fontFamily = Raleway,
-        fontWeight = FontWeight.Medium,
-        fontSize = 16.sp
-    )
-
-    val bodyRegular16 = TextStyle(
-        fontFamily = Raleway,
-        fontWeight = FontWeight.Normal,
-        fontSize = 16.sp
-    )
-
+    // Только один дополнительный стиль, которого нет в Material 3
     val bodyMedium14 = TextStyle(
         fontFamily = Raleway,
         fontWeight = FontWeight.Medium,
         fontSize = 14.sp
-    )
-
-    val bodyRegular14 = TextStyle(
-        fontFamily = Raleway,
-        fontWeight = FontWeight.Normal,
-        fontSize = 14.sp
-    )
-
-    val bodyRegular12 = TextStyle(
-        fontFamily = Raleway,
-        fontWeight = FontWeight.Normal,
-        fontSize = 12.sp
-    )
-
-    // Subtitle стили
-    val subtitleRegular16 = TextStyle(
-        fontFamily = Raleway,
-        fontWeight = FontWeight.Normal,
-        fontSize = 16.sp
     )
 }

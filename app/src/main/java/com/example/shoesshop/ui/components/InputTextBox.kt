@@ -1,5 +1,6 @@
 package com.example.shoesshop.ui.components
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -27,67 +28,71 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.shoesshop.R
+import com.example.shoesshop.ui.theme.AppTypography
+import com.example.shoesshop.ui.theme.Typography
 
 @Composable
 fun InputTextBox(
     modifier: Modifier = Modifier,
     value: String,
     onValueChange: (String) -> Unit,
-    label: String = "",
     placeholder: String = "",
     isError: Boolean = false,
     errorMessage: String? = null,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    trailingIcon: @Composable (() -> Unit)? = null,
+    singleLine: Boolean = true
 ) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        modifier = modifier
-            .fillMaxWidth(),
-        label = {
-            if (label.isNotEmpty()) {
-                Text(
-                    text = label,
-                    style = TextStyle(
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Normal,
-                    ),
-                    color = colorResource(R.color.Text),
-                )
-            }
-        },
-        placeholder = {
-            if (placeholder.isNotEmpty()) {
-                Text(
-                    text = placeholder,
-                    style = TextStyle(
-                        fontSize = 16.sp
-                    ),
-                    color = colorResource(R.color.Background)
-                )
-            }
-        },
-        isError = isError,
-        supportingText = errorMessage?.let {
-            {
-                Text(
-                    text = errorMessage,
-                    color = Color.Red,
-                    fontSize = 12.sp
-                )
-            }
-        },
-        enabled = enabled,
-        shape = RoundedCornerShape(14.dp),
-        colors = OutlinedTextFieldDefaults.colors(
-            unfocusedBorderColor = colorResource(R.color.Background),
-            focusedBorderColor = colorResource(R.color.Background)
-        ),
-        textStyle = TextStyle(
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Normal
+    Column(
+        modifier = modifier.fillMaxWidth()
+    ) {
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = Modifier.fillMaxWidth(),
+            label = null, // Убираем label полностью
+            placeholder = {
+                if (placeholder.isNotEmpty()) {
+                    Text(
+                        text = placeholder,
+                        style = AppTypography.bodyMedium14,
+                        color = colorResource(R.color.Hint)
+                    )
+                }
+            },
+            isError = isError,
+            supportingText = errorMessage?.let {
+                {
+                    Text(
+                        text = errorMessage,
+                        color = Color.Red,
+                        style = Typography.labelSmall
+                    )
+                }
+            },
+            enabled = enabled,
+            shape = RoundedCornerShape(14.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                unfocusedBorderColor = colorResource(R.color.Background),
+                focusedBorderColor = colorResource(R.color.Background),
+                unfocusedContainerColor = colorResource(R.color.Background),
+                focusedContainerColor = colorResource(R.color.Background),
+                unfocusedPlaceholderColor = colorResource(R.color.Hint),
+                focusedPlaceholderColor = colorResource(R.color.Hint)
+            ),
+            textStyle = TextStyle(
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Normal,
+                color = colorResource(R.color.Text)
+            ),
+            visualTransformation = visualTransformation,
+            keyboardOptions = keyboardOptions,
+            trailingIcon = trailingIcon,
+            singleLine = singleLine
         )
-    )
+    }
 }
 
 @Composable
@@ -105,96 +110,9 @@ fun PasswordInputTextBox(
         modifier = modifier,
         value = value,
         onValueChange = onValueChange,
-        label = label,
         placeholder = placeholder,
         isError = isError,
         errorMessage = errorMessage,
         enabled = enabled
-    )
-}
-
-@Composable
-fun EmailInputTextBox(
-    modifier: Modifier = Modifier,
-    value: String,
-    onValueChange: (String) -> Unit,
-    label: String = "Email",
-    placeholder: String = "email@example.com",
-    isError: Boolean = false,
-    errorMessage: String? = null,
-    enabled: Boolean = true
-) {
-    InputTextBox(
-        modifier = modifier,
-        value = value,
-        onValueChange = onValueChange,
-        label = label,
-        placeholder = placeholder,
-        isError = isError,
-        errorMessage = errorMessage,
-        enabled = enabled
-    )
-}
-
-// Специализированный компонент для имени
-@Composable
-fun NameInputTextBox(
-    modifier: Modifier = Modifier,
-    value: String,
-    onValueChange: (String) -> Unit,
-    label: String = "Ваше имя",
-    placeholder: String = "Введите имя",
-    isError: Boolean = false,
-    errorMessage: String? = null,
-    enabled: Boolean = true
-) {
-    InputTextBox(
-        modifier = modifier,
-        value = value,
-        onValueChange = onValueChange,
-        label = label,
-        placeholder = placeholder,
-        isError = isError,
-        errorMessage = errorMessage,
-        enabled = enabled
-    )
-}
-
-@Preview
-@Composable
-private fun InputTextBoxPreview() {
-    var text by remember { mutableStateOf("") }
-
-    InputTextBox(
-        value = text,
-        onValueChange = { text = it },
-        label = "Ваше имя",
-        placeholder = "Введите ваше имя"
-    )
-}
-
-@Preview
-@Composable
-private fun EmailInputTextBoxPreview() {
-    var email by remember { mutableStateOf("") }
-
-    EmailInputTextBox(
-        value = email,
-        onValueChange = { email = it },
-        label = "Email",
-        placeholder = "email@example.com"
-    )
-}
-
-@Preview
-@Composable
-private fun PasswordInputTextBoxPreview() {
-    var password by remember { mutableStateOf("") }
-
-    PasswordInputTextBox(
-        value = password,
-        onValueChange = { password = it },
-        label = "Пароль",
-        placeholder = "Введите пароль"
     )
 }
