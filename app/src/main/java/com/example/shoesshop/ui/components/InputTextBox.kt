@@ -128,10 +128,10 @@ fun PasswordInputTextBox(
             {
                 val image = if (passwordVisible) {
                     // Используйте вашу иконку для скрытого пароля
-                    painterResource(id = R.drawable.eye_close)
+                    painterResource(id = R.drawable.eye_open)
                 } else {
                     // Используйте вашу иконку для видимого пароля
-                    painterResource(id = R.drawable.eye_open)
+                    painterResource(id = R.drawable.eye_close)
                 }
 
                 IconButton(

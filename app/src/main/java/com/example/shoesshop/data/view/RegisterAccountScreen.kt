@@ -37,12 +37,28 @@ import com.example.shoesshop.ui.theme.Typography
 
 @Composable
 fun RegisterAccount(
-    onNavigateToSignIn: () -> Unit,
+    onNavigateToSignIn: () -> Unit = {},
     onBackClick: () -> Unit = {},
-    onLoginClick: () -> Unit = {},
     viewModel: RegisterAccountViewModel
 ) {
     val context = LocalContext.current
+
+    val uiState by viewModel.uiState.collectAsState()
+
+    // Показываем AlertDialog при наличии ошибки
+    if (uiState.errorMessage != null) {
+        AlertDialog(
+            onDismissRequest = { viewModel.clearError() },
+            confirmButton = {
+                TextButton(onClick = { viewModel.clearError() }) {
+                    Text("OK")
+                }
+            },
+            title = { Text("Ошибка") },
+            text = { Text(uiState.errorMessage!!) }
+        )
+    }
+
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -192,7 +208,11 @@ fun RegisterAccount(
         RegisterButton(
             modifier = Modifier,
             text = stringResource(R.string.sign_up),
-            onClick = {} ,
+            onClick = {
+                viewModel.register(context, name, email, password, showPassword) {
+
+                }
+            },
             enabled = isFormValid
         )
 
@@ -202,7 +222,7 @@ fun RegisterAccount(
             horizontalArrangement = Arrangement.Center,
         ) {
             TextButton(
-                onClick = onLoginClick,
+                onClick = onNavigateToSignIn,
                 contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
             ) {
                 Text(
@@ -237,5 +257,5 @@ fun RegisterAccount(
 @Composable
 private fun RegisterAccountPreview() {
     val viewModel: RegisterAccountViewModel = viewModel()
-    RegisterAccount({}, {}, {}, viewModel)
+    RegisterAccount({}, {}, viewModel)
 }

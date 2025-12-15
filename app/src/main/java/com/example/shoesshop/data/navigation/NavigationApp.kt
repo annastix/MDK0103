@@ -5,6 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.shoesshop.data.view.RegisterAccount
+import com.example.shoesshop.data.view.SignInScreen
 import com.example.shoesshop.data.viewModel.RegisterAccountViewModel
 
 @Composable
@@ -19,7 +20,12 @@ fun NavigationApp(
         composable("register_account") {
             RegisterAccount(
                 viewModel = registerAccountViewModel,
-                onNavigateToSignIn = {  }
+                onNavigateToSignIn = {  navController.navigate("sign_in") }
+            )
+        }
+        composable("sign_in") {
+            SignInScreen(
+                onRegisterClick =  {  navController.navigate("register_account") }
             )
         }
     }
