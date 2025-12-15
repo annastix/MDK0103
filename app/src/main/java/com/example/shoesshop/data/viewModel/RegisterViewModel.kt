@@ -59,10 +59,8 @@ class RegisterAccountViewModel : ViewModel() {
             _uiState.value = state.copy(isLoading = true)
 
             try {
-                // имитация запроса
                 delay(1500)
 
-                // TODO: Retrofit запрос регистрации
                 onSuccess()
 
             } catch (e: Exception) {

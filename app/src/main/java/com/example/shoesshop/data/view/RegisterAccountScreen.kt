@@ -31,6 +31,7 @@ import com.example.shoeshop.ui.components.BackButton
 import com.example.shoesshop.R
 import com.example.shoesshop.data.viewModel.RegisterAccountViewModel
 import com.example.shoesshop.ui.components.InputTextBox
+import com.example.shoesshop.ui.components.PasswordInputTextBox
 import com.example.shoesshop.ui.components.RegisterButton
 import com.example.shoesshop.ui.theme.Typography
 
@@ -46,8 +47,11 @@ fun RegisterAccount(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
-    var passwordVisible by remember { mutableStateOf(false) }
     var showPassword by remember { mutableStateOf(false) }
+
+    val isFormValid = remember(showPassword) {
+        showPassword
+    }
 
     Column(
         modifier = Modifier
@@ -56,9 +60,11 @@ fun RegisterAccount(
             .padding(horizontal = 20.dp),
         verticalArrangement = Arrangement.Center
     ) {
+        Spacer(modifier = Modifier.weight(0.5f))
         BackButton(
             onClick = onBackClick
         )
+        Spacer(modifier = Modifier.height(21.dp))
         Column(
             modifier = Modifier
             .fillMaxWidth(),
@@ -118,7 +124,7 @@ fun RegisterAccount(
             color = colorResource(R.color.Text)
         )
 
-        InputTextBox(
+        PasswordInputTextBox(
             modifier = Modifier,
             value = password,
             onValueChange = { password = it },
@@ -186,12 +192,14 @@ fun RegisterAccount(
         RegisterButton(
             modifier = Modifier,
             text = stringResource(R.string.sign_up),
-            onClick = {}
+            onClick = {} ,
+            enabled = isFormValid
         )
 
+        Spacer(modifier = Modifier.weight(1f))
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
+            modifier = Modifier.fillMaxWidth().padding(bottom = 47.dp),
+            horizontalArrangement = Arrangement.Center,
         ) {
             TextButton(
                 onClick = onLoginClick,
@@ -216,7 +224,7 @@ fun RegisterAccount(
                                 fontSize = Typography.bodySmall.fontSize,
                             )
                         ) {
-                            append(stringResource(id = R.string.sign_in))
+                            append(stringResource(id = R.string.enter_to_account))
                         }
                     }
                 )

@@ -11,6 +11,7 @@ composeBom = "2024.09.00"
 ui = "1.10.0"
 navigationRuntimeKtx = "2.9.6"
 navigationComposeVersion = "2.9.5"
+retrofit = "3.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -30,6 +31,8 @@ androidx-compose-material3 = { group = "androidx.compose.material3", name = "mat
 androidx-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "ui" }
 androidx-navigation-runtime-ktx = { group = "androidx.navigation", name = "navigation-runtime-ktx", version.ref = "navigationRuntimeKtx" }
 navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationComposeVersion" }
+retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
+gson = { module = "com.squareup.retrofit2:converter-gson", version.ref="retrofit"}
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

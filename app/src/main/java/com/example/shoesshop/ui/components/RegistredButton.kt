@@ -29,25 +29,30 @@ fun RegisterButton(
     enabled: Boolean = true
 ) {
     Button(
-        onClick = onClick,
+        onClick = { if (enabled) onClick() }, // Проверяем enabled внутри onClick
         modifier = modifier
             .fillMaxWidth()
-            .height(56.dp),
+            .height(50.dp),
         shape = RoundedCornerShape(13.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = colorResource(R.color.Accent),
-            contentColor =  colorResource(R.color.Background),
-            disabledContainerColor = colorResource(R.color.Disable),
-            disabledContentColor = colorResource(R.color.Background)
+            containerColor = if (enabled) {
+                colorResource(R.color.Accent)
+            } else {
+                colorResource(R.color.Disable)
+            },
+            disabledContainerColor = colorResource(R.color.Disable), // Явно указываем цвет для disabled состояния
+            disabledContentColor = colorResource(R.color.Background) // Цвет текста для disabled состояния
         ),
         enabled = enabled
     ) {
         Text(
             text = text,
-            fontSize = 14.sp,
-            lineHeight = 16.sp,
-            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-            style = Typography.labelSmall
+            style = Typography.displayMedium,
+            color = if (enabled) {
+                colorResource(R.color.Background)
+            } else {
+                colorResource(R.color.Background) // или другой цвет для неактивного текста
+            }
         )
     }
 }

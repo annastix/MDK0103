@@ -17,8 +17,13 @@
     <string name="personal_data">Даю согласие на обработку персональных данных</string>
     <string name="sign_up">Зарегистрироваться</string>
     <string name="sign_in">Войти</string>
-    <string name="create_account">Вы впервые? Создать пользователя</string>
-    <string name="already_account">Есть аккаунт? Войти</string>
+
+    <string name="create_account">Создать пользователя</string>
+    <string name="new_user">Вы впервые?</string>
+
+    <string name="already_account">Есть аккаунт?</string>
+    <string name="enter_to_account">Войти</string>
+
     <string name="recovery">Воcстановить</string>
     <string name="forgot">Забыл пароль</string>
     <string name="reset_password">Введите свою учетную запись для сброса</string>
