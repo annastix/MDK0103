@@ -30,6 +30,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.shoeshop.ui.components.BackButton
 import com.example.shoesshop.R
 import com.example.shoesshop.data.viewModel.RegisterAccountViewModel
+import com.example.shoesshop.ui.components.AlertMessage
 import com.example.shoesshop.ui.components.InputTextBox
 import com.example.shoesshop.ui.components.PasswordInputTextBox
 import com.example.shoesshop.ui.components.RegisterButton
@@ -39,6 +40,7 @@ import com.example.shoesshop.ui.theme.Typography
 fun RegisterAccount(
     onNavigateToSignIn: () -> Unit = {},
     onBackClick: () -> Unit = {},
+    onSendOTP: () -> Unit = {},
     viewModel: RegisterAccountViewModel
 ) {
     val context = LocalContext.current
@@ -46,16 +48,13 @@ fun RegisterAccount(
     val uiState by viewModel.uiState.collectAsState()
 
     // Показываем AlertDialog при наличии ошибки
+    // Замените блок if (uiState.errorMessage != null) на:
     if (uiState.errorMessage != null) {
-        AlertDialog(
-            onDismissRequest = { viewModel.clearError() },
-            confirmButton = {
-                TextButton(onClick = { viewModel.clearError() }) {
-                    Text("OK")
-                }
-            },
-            title = { Text("Ошибка") },
-            text = { Text(uiState.errorMessage!!) }
+        AlertMessage(
+            title = "Ошибка",
+            description = uiState.errorMessage!!,
+            onCancelClick = { viewModel.clearError() },
+            onConfirmClick = { viewModel.clearError() }
         )
     }
 
@@ -209,8 +208,8 @@ fun RegisterAccount(
             modifier = Modifier,
             text = stringResource(R.string.sign_up),
             onClick = {
-                viewModel.register(context, name, email, password, showPassword) {
-
+                viewModel.register(context, name, email, password, showPassword, {}) {
+                    onSendOTP()
                 }
             },
             enabled = isFormValid
@@ -257,5 +256,5 @@ fun RegisterAccount(
 @Composable
 private fun RegisterAccountPreview() {
     val viewModel: RegisterAccountViewModel = viewModel()
-    RegisterAccount({}, {}, viewModel)
+    RegisterAccount({}, {}, {}, viewModel)
 }

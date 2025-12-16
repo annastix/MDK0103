@@ -7,7 +7,6 @@ import androidx.compose.ui.unit.sp
 
 // Основная типография Material 3
 val Typography = Typography(
-    // Heading стили
     headlineLarge = TextStyle(
         fontFamily = Raleway,
         fontWeight = FontWeight.Normal,
