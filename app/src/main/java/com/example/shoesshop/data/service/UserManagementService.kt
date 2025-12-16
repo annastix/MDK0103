@@ -1,6 +1,7 @@
 package com.example.shoesshop.data.service
 
 import com.example.shoesshop.data.models.RegisterRequest
+import com.example.shoesshop.data.models.SignInRequest
 import com.example.shoesshop.data.models.VerifyOTPRequest
 import com.example.shoesshop.data.models.VerifyOTPResponse
 import retrofit2.http.Body
@@ -12,24 +13,25 @@ const val API_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIs
 
 interface UserManagementService {
 
-    @Headers(
-        "apikey: $API_KEY",
-        "Content-Type: application/json"
-    )
+    @Headers("apikey: $API_KEY", "Content-Type: application/json")
     @POST("auth/v1/signup")
     suspend fun signUp(@Body signUpRequest: RegisterRequest): Response<RegisterRequest>
 
-//    @Headers(
-//        "apikey: $API_KEY",
-//        "Content-Type: application/json"
-//    )
-//    @POST("auth/v1/token?grant_type=password")
-//    suspend fun signIn(@Body signInRequest: SignInRequest): Response<SignInResponse>
+    @Headers("apikey: $API_KEY", "Content-Type: application/json")
+    @POST("auth/v1/token?grant_type=password")
+    suspend fun signIn(@Body signInRequest: SignInRequest): Response<SignInRequest>
 
-    @Headers(
-        "apikey: $API_KEY",
-        "Content-Type: application/json"
-    )
+    @Headers("apikey: $API_KEY", "Content-Type: application/json")
     @POST("auth/v1/verify")
     suspend fun verifyOtp(@Body verifyOtpRequest: VerifyOTPRequest): Response<VerifyOTPResponse>
+
+    // Для повторной отправки OTP
+    @Headers("apikey: $API_KEY", "Content-Type: application/json")
+    @POST("auth/v1/otp")
+    suspend fun resendOtp(@Body otpRequest: ResendOTPRequest): Response<Unit>
 }
+
+data class ResendOTPRequest(
+    val email: String,
+    val type: String = "signup"
+)

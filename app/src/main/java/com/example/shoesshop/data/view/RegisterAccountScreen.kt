@@ -27,7 +27,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.shoeshop.ui.components.BackButton
+import com.example.shoesshop.ui.components.BackButton
 import com.example.shoesshop.R
 import com.example.shoesshop.data.viewModel.RegisterAccountViewModel
 import com.example.shoesshop.ui.components.AlertMessage
@@ -208,7 +208,7 @@ fun RegisterAccount(
             modifier = Modifier,
             text = stringResource(R.string.sign_up),
             onClick = {
-                viewModel.register(context, name, email, password, showPassword, {}) {
+                viewModel.register(context, name, email, password, showPassword, onSendOTP) {
                     onSendOTP()
                 }
             },

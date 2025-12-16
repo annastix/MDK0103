@@ -1,5 +1,6 @@
 package com.example.shoesshop.data.view
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,15 +11,19 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -26,22 +31,64 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.shoeshop.ui.components.BackButton
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.shoesshop.ui.components.BackButton
 import com.example.shoesshop.R
+import com.example.shoesshop.data.viewModel.SignInViewModel
+import com.example.shoesshop.ui.components.AlertMessage
 import com.example.shoesshop.ui.components.InputTextBox
 import com.example.shoesshop.ui.components.PasswordInputTextBox
 import com.example.shoesshop.ui.components.RegisterButton
 import com.example.shoesshop.ui.theme.Typography
+import kotlinx.coroutines.delay
 
 @Composable
 fun SignInScreen(
+    viewModel: SignInViewModel = viewModel(),
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit = {},
     resetPassword: () -> Unit = {},
-    onRegisterClick: () -> Unit = {}
+    onRegisterClick: () -> Unit = {},
+    onSignInClick: () -> Unit = {}
 ) {
+    // Следим за состоянием из ViewModel
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    // Локальные состояния для полей ввода
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+
+    // Состояние для отображения AlertDialog
+    var showErrorDialog by remember { mutableStateOf(false) }
+    var errorDialogMessage by remember { mutableStateOf("") }
+
+    val context = LocalContext.current
+
+    // Обработка ошибок из ViewModel
+    LaunchedEffect(uiState.errorMessage) {
+        if (uiState.errorMessage != null) {
+            errorDialogMessage = uiState.errorMessage ?: "Произошла ошибка"
+            showErrorDialog = true
+        }
+    }
+
+    // AlertDialog для отображения ошибок
+    if (showErrorDialog) {
+        AlertMessage(
+            title = "Ошибка",
+            description = errorDialogMessage,
+            showCancelButton = false, // Только кнопка OK
+            onCancelClick = {
+                showErrorDialog = false
+                viewModel.clearError()
+            },
+            onConfirmClick = {
+                showErrorDialog = false
+                viewModel.clearError()
+            }
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -50,7 +97,6 @@ fun SignInScreen(
             .padding(horizontal = 20.dp),
         verticalArrangement = Arrangement.Center
     ) {
-
         Spacer(modifier = Modifier.weight(0.5f))
         BackButton(
             onClick = onBackClick
@@ -125,11 +171,37 @@ fun SignInScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        RegisterButton(
-            modifier = Modifier,
-            text = stringResource(R.string.sign_in),
-            onClick = {}
-        )
+        // Показываем индикатор загрузки
+        if (uiState.isLoading) {
+            // Ваш индикатор загрузки
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .size(48.dp)
+                    .align(Alignment.CenterHorizontally),
+                color = colorResource(R.color.Accent)
+            )
+        } else {
+            RegisterButton(
+                modifier = Modifier,
+                text = stringResource(R.string.sign_in),
+                enabled = email.isNotEmpty() && password.isNotEmpty(),
+                onClick = {
+                    viewModel.register(
+                        context = context,
+                        email = email,
+                        password = password,
+                        onSuccess = {
+                            // Успешный вход
+                            onSignInClick()
+                        },
+                        onError = { errorMessage ->
+                            // Ошибка уже обработана в ViewModel через showError()
+                            Log.e("SignInScreen", "Error from callback: $errorMessage")
+                        }
+                    )
+                }
+            )
+        }
 
         Spacer(modifier = Modifier.weight(1f))
 

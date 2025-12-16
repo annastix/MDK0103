@@ -8,6 +8,7 @@ import com.example.shoesshop.data.models.RegisterRequest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import com.example.shoesshop.data.RetrofitInstance
 import java.util.regex.Pattern
 
 data class RegisterAccountUiState(
@@ -39,6 +40,9 @@ class RegisterAccountViewModel : ViewModel() {
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
+        this.email = email
+        this.password = password
+
         // Сначала проверяем обязательные поля
         if (name.isEmpty()) {
             showError("Имя не может быть пустым")
@@ -73,15 +77,18 @@ class RegisterAccountViewModel : ViewModel() {
             try {
                 val signUpData = RegisterRequest(email, password)
                 val response = RetrofitInstance.userManagementService.signUp(signUpData)
+
                 if (response.isSuccessful) {
                     response.body()?.let {
                         Log.v("SignUp", "User registered successfully: ${it.email}")
                         // Сохраняем данные в SharedPreferences перед переходом на OTP
                         saveCredentialsToSharedPreferences(context)
                         onSuccess()
+                    } ?: run {
+                        // Если body() вернул null
+                        onError("Пустой ответ от сервера")
                     }
-                }
-                else {
+                } else {
                     val errorMessage = when (response.code()) {
                         422 -> "Пользователь уже существует или неверные данные"
                         500 -> "Ошибка сервера"
@@ -91,6 +98,7 @@ class RegisterAccountViewModel : ViewModel() {
                 }
             } catch (e: Exception) {
                 showError("Ошибка сети. Проверьте подключение к Интернету\n"+e.message.toString())
+                onError("Ошибка сети: ${e.message}")
             } finally {
                 _uiState.value = _uiState.value.copy(isLoading = false)
             }

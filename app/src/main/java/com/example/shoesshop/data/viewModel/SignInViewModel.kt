@@ -4,7 +4,9 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.shoesshop.data.RetrofitInstance
 import com.example.shoesshop.data.models.RegisterRequest
+import com.example.shoesshop.data.models.SignInRequest
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,7 +24,6 @@ class SignInViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(SignInUiState())
     val uiState: StateFlow<SignInUiState> = _uiState
 
-    // Регулярное выражение для проверки email по стандарту RFC 5322
     private val EMAIL_PATTERN = Pattern.compile(
         "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@" +
                 "(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$"
@@ -40,7 +41,9 @@ class SignInViewModel : ViewModel() {
         onError: (String) -> Unit
     ) {
         if (email.isEmpty()) {
-            showError("Email не может быть пустым")
+            val error = "Email не может быть пустым"
+            showError(error)
+            onError(error)
             return
         }
 
@@ -48,11 +51,14 @@ class SignInViewModel : ViewModel() {
         val emailError = getEmailError(email)
         if (emailError != null) {
             showError(emailError)
+            onError(emailError)
             return
         }
 
         if (password.isEmpty()) {
-            showError("Пароль не может быть пустым")
+            val error = "Пароль не может быть пустым"
+            showError(error)
+            onError(error)
             return
         }
 
@@ -60,35 +66,37 @@ class SignInViewModel : ViewModel() {
             _uiState.value = _uiState.value.copy(isLoading = true)
 
             try {
-//                val signInData = SignInRequest(email, password)
-//                val response = RetrofitInstance.userManagementService.signIn(signInData)
-//                if (response.isSuccessful){
-//                    response.body()?.let {
-//                        Log.v("SignIn", "Пользователь успешно авторизован: ${it.email}")
-//                        onSuccess()
-//                    }
-//                }
-//                else {
-//                    Log.e("SignIn", "HTTP ошибка: ${response.code()} - ${response.message()}")
-//                    val errorMessage = when
-//                                               (response.code())
-//                    {
-//                        400 -> "Неверный email или пароль"
-//                        422 -> "Некорректные данные"
-//                        500 -> "Ошибка сервера"
-//                        else -> "Ошибка входа: ${response.message()}"
-//                    }
-//                    val errorBody = response.errorBody()?.string()
-//                    Log.e("SignIn", "Тело ошибки: $errorBody")
-//                    onError(errorMessage)
-//                }
+                val signInData = SignInRequest(email, password)
+                val response = RetrofitInstance.userManagementService.signIn(signInData)
+                if (response.isSuccessful) {
+                    response.body()?.let {
+                        Log.v("SignIn", "Пользователь успешно авторизован: ${it.email}")
+                        onSuccess()
+                    }
+                } else {
+                    Log.e("SignIn", "HTTP ошибка: ${response.code()} - ${response.message()}")
+                    val errorMessage = when(response.code()) {
+                        400 -> "Неверный email или пароль"
+                        422 -> "Некорректные данные"
+                        500 -> "Ошибка сервера"
+                        else -> "Ошибка входа: ${response.message()}"
+                    }
+                    val errorBody = response.errorBody()?.string()
+                    Log.e("SignIn", "Тело ошибки: $errorBody")
+                    showError(errorMessage)
+                    onError(errorMessage)
+                }
             } catch (e: Exception) {
-                showError("Ошибка сети. Проверьте подключение к Интернету\n"+e.message.toString())
+                val errorMessage = "Ошибка сети. Проверьте подключение к Интернету\n${e.message}"
+                Log.e("SignIn", "Сетевая ошибка", e)
+                showError(errorMessage)
+                onError(errorMessage)
             } finally {
                 _uiState.value = _uiState.value.copy(isLoading = false)
             }
         }
     }
+
 
     private fun saveCredentialsToSharedPreferences(context: Context) {
         val sharedPreferences = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
@@ -142,6 +150,7 @@ class SignInViewModel : ViewModel() {
                 }
 
                 null
+
             }
         }
     }

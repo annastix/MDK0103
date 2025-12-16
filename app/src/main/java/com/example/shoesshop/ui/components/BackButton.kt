@@ -1,4 +1,4 @@
-package com.example.shoeshop.ui.components
+package com.example.shoesshop.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

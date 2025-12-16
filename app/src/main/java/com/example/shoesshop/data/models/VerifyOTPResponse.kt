@@ -1,5 +1,7 @@
 package com.example.shoesshop.data.models
 
-data class VerifyOTPResponse (
+import com.google.gson.annotations.SerializedName
+
+data class VerifyOTPResponse(
     var accessToken: String
 )

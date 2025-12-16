@@ -27,11 +27,14 @@ fun NavigationApp(
         }
         composable("sign_in") {
             SignInScreen(
-                onRegisterClick =  {  navController.navigate("register_account") }
+                onRegisterClick =  {  navController.navigate("register_account") },
+                onSignInClick = {  navController.navigate("register_account") }
             )
         }
         composable("send_otp") {
-            VerificationScreen()
+            VerificationScreen(
+                onVerificationSuccess = {  navController.navigate("sign_in") }
+            )
         }
     }
 }
