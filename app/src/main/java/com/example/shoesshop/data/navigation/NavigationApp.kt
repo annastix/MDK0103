@@ -5,6 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.shoesshop.data.view.ForgotPasswordScreen
+import com.example.shoesshop.data.view.OnboardingScreen
 import com.example.shoesshop.data.view.RegisterAccount
 import com.example.shoesshop.data.view.SignInScreen
 import com.example.shoesshop.data.view.VerificationScreen
@@ -18,7 +19,7 @@ fun NavigationApp(
 
     NavHost(
         navController = navController,
-        startDestination = "register_account"
+        startDestination = "onboard"
     ) {
         composable("register_account") {
             RegisterAccount(
@@ -44,6 +45,11 @@ fun NavigationApp(
         }
         composable("forgot_passwd") {
             ForgotPasswordScreen()
+        }
+        composable("onboard") {
+            OnboardingScreen(
+                onFinish ={  navController.navigate("register_account") }
+            )
         }
     }
 }
