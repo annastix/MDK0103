@@ -4,6 +4,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.shoesshop.data.view.ForgotPasswordScreen
 import com.example.shoesshop.data.view.RegisterAccount
 import com.example.shoesshop.data.view.SignInScreen
 import com.example.shoesshop.data.view.VerificationScreen
@@ -14,6 +15,7 @@ fun NavigationApp(
     navController: NavHostController
 ) {
     val registerAccountViewModel: RegisterAccountViewModel = viewModel()
+
     NavHost(
         navController = navController,
         startDestination = "register_account"
@@ -28,13 +30,17 @@ fun NavigationApp(
         composable("sign_in") {
             SignInScreen(
                 onRegisterClick =  {  navController.navigate("register_account") },
-                onSignInClick = {  navController.navigate("register_account") }
+                onSignInClick = {  navController.navigate("register_account") },
+                resetPassword = {  navController.navigate("forgot_passwd") }
             )
         }
         composable("send_otp") {
             VerificationScreen(
                 onVerificationSuccess = {  navController.navigate("sign_in") }
             )
+        }
+        composable("forgot_passwd") {
+            ForgotPasswordScreen()
         }
     }
 }
