@@ -41,31 +41,53 @@ fun RegisterAccount(
     onNavigateToSignIn: () -> Unit = {},
     onBackClick: () -> Unit = {},
     onSendOTP: () -> Unit = {},
-    viewModel: RegisterAccountViewModel
+    viewModel: RegisterAccountViewModel = viewModel()
 ) {
     val context = LocalContext.current
-
     val uiState by viewModel.uiState.collectAsState()
 
-    // Показываем AlertDialog при наличии ошибки
-    // Замените блок if (uiState.errorMessage != null) на:
-    if (uiState.errorMessage != null) {
+    // Флаг для показа/скрытия диалога
+    var showErrorDialog by remember { mutableStateOf(false) }
+    var currentErrorMessage by remember { mutableStateOf<String?>(null) }
+
+    // Обновляем диалог при изменении ошибки в состоянии
+    LaunchedEffect(uiState.errorMessage) {
+        if (uiState.errorMessage != null && !showErrorDialog) {
+            currentErrorMessage = uiState.errorMessage
+            showErrorDialog = true
+        }
+    }
+
+    // Диалог ошибки
+    if (showErrorDialog && currentErrorMessage != null) {
         AlertMessage(
             title = "Ошибка",
-            description = uiState.errorMessage!!,
-            onCancelClick = { viewModel.clearError() },
-            onConfirmClick = { viewModel.clearError() }
+            description = currentErrorMessage!!,
+            onCancelClick = {
+                showErrorDialog = false
+                currentErrorMessage = null
+                viewModel.clearError()
+            },
+            onConfirmClick = {
+                showErrorDialog = false
+                currentErrorMessage = null
+                viewModel.clearError()
+            }
         )
     }
+
 
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var isPolicyAccepted by remember { mutableStateOf(false) }
 
-    var showPassword by remember { mutableStateOf(false) }
-
-    val isFormValid = remember(showPassword) {
-        showPassword
+    // ФИКС: Правильная логика валидации формы
+    val isFormValid = remember(name, email, password, isPolicyAccepted) {
+        name.isNotBlank() &&
+                email.isNotBlank() &&
+                password.isNotBlank() &&
+                isPolicyAccepted
     }
 
     Column(
@@ -76,13 +98,11 @@ fun RegisterAccount(
         verticalArrangement = Arrangement.Center
     ) {
         Spacer(modifier = Modifier.weight(0.5f))
-        BackButton(
-            onClick = onBackClick
-        )
+        BackButton(onClick = onBackClick)
         Spacer(modifier = Modifier.height(21.dp))
+
         Column(
-            modifier = Modifier
-            .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
@@ -98,7 +118,6 @@ fun RegisterAccount(
                 color = colorResource(R.color.SubTextDark)
             )
         }
-
 
         Text(
             text = stringResource(R.string.name),
@@ -154,39 +173,26 @@ fun RegisterAccount(
                 .padding(bottom = 32.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // ФИКС: Правильная обработка чекбокса
             Box(
                 modifier = Modifier
                     .size(24.dp)
                     .clip(MaterialTheme.shapes.small)
-                    .selectable(
-                        selected = showPassword,
-                        onClick = { showPassword = !showPassword },
-                        role = Role.Checkbox
+                    .clickable { isPolicyAccepted = !isPolicyAccepted }
+                    .border(
+                        width = 2.dp,
+                        color = if (isPolicyAccepted)
+                            colorResource(R.color.Accent)
+                        else MaterialTheme.colorScheme.outlineVariant,
+                        shape = MaterialTheme.shapes.small
+                    )
+                    .background(
+                        if (isPolicyAccepted) colorResource(R.color.Accent)
+                        else Color.Transparent
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(24.dp)
-                        .clip(MaterialTheme.shapes.small)
-                        .border(
-                            width = 2.dp,
-                            color = if (showPassword) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
-                            shape = MaterialTheme.shapes.small
-                        )
-                        .background(
-                            if (showPassword) colorResource(R.color.Accent) else Color.Transparent
-                        )
-                )
-
-                if (showPassword) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.policy_check),
-                        contentDescription = "Выбрано",
-                        modifier = Modifier.size(16.dp),
-                        tint = colorResource(R.color.black)
-                    )
-                } else {
+                if (isPolicyAccepted) {
                     Icon(
                         painter = painterResource(id = R.drawable.policy_check),
                         contentDescription = "Выбрано",
@@ -195,6 +201,7 @@ fun RegisterAccount(
                     )
                 }
             }
+
             Spacer(modifier = Modifier.width(12.dp))
             Text(
                 text = stringResource(R.string.personal_data),
@@ -204,18 +211,31 @@ fun RegisterAccount(
 
         Spacer(modifier = Modifier.height(24.dp))
 
+        // ФИКС: Кнопка правильно вызывает регистрацию
         RegisterButton(
             modifier = Modifier,
-            text = stringResource(R.string.sign_up),
+            text = if (uiState.isLoading) stringResource(R.string.sign_up)+"..." else stringResource(R.string.sign_up),
             onClick = {
-                viewModel.register(context, name, email, password, showPassword, onSendOTP) {
-                    onSendOTP()
+                if (!uiState.isLoading && isFormValid) {
+                    viewModel.register(
+                        context = context,
+                        name = name,
+                        email = email,
+                        password = password,
+                        isPolicyAccepted = isPolicyAccepted,
+                        onSuccess = onSendOTP
+                    )
                 }
             },
-            enabled = isFormValid
+            enabled = name.isNotBlank() &&
+                    email.isNotBlank() &&
+                    password.isNotBlank() &&
+                    isPolicyAccepted &&
+                    !uiState.isLoading // Блокируем при загрузке
         )
 
         Spacer(modifier = Modifier.weight(1f))
+
         Row(
             modifier = Modifier.fillMaxWidth().padding(bottom = 47.dp),
             horizontalArrangement = Arrangement.Center,

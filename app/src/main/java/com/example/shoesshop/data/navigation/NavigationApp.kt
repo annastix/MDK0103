@@ -23,6 +23,7 @@ fun NavigationApp(
         composable("register_account") {
             RegisterAccount(
                 viewModel = registerAccountViewModel,
+                onBackClick = { navController.popBackStack() },
                 onNavigateToSignIn = {  navController.navigate("sign_in") },
                 onSendOTP = {  navController.navigate("send_otp") },
             )
@@ -30,12 +31,14 @@ fun NavigationApp(
         composable("sign_in") {
             SignInScreen(
                 onRegisterClick =  {  navController.navigate("register_account") },
+                onBackClick = { navController.popBackStack() },
                 onSignInClick = {  navController.navigate("register_account") },
                 resetPassword = {  navController.navigate("forgot_passwd") }
             )
         }
         composable("send_otp") {
             VerificationScreen(
+                onBackClick = { navController.popBackStack() },
                 onVerificationSuccess = {  navController.navigate("sign_in") }
             )
         }

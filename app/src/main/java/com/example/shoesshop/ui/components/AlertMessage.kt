@@ -29,31 +29,58 @@ fun AlertMessage(
     description: String = "",
     onCancelClick: () -> Unit = {},
     onConfirmClick: () -> Unit = {},
-    showCancelButton: Boolean = true  // По умолчанию показываем "Отмена"
+    showCancelButton: Boolean = true
 ) {
     AlertDialog(
         modifier = Modifier,
-        onDismissRequest = {},
+        onDismissRequest = {
+            // Закрытие по клику вне диалога
+            onCancelClick()
+        },
         containerColor = colorResource(R.color.white),
         confirmButton = {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
             ) {
-                TextButton(onClick = {})
-                {
-                Text("Отмена")
+                if (showCancelButton) {
+                    TextButton(
+                        onClick = {
+                            onCancelClick() // ← Закрытие при нажатии "Отмена"
+                        }
+                    ) {
+                        Text("Отмена")
+                    }
+                    Spacer(modifier = Modifier.width(50.dp))
                 }
-                Spacer(modifier = Modifier.width(50.dp))
-                TextButton(onClick = {})
-                {
+
+                TextButton(
+                    onClick = {
+                        onConfirmClick() // ← Закрытие при нажатии "OK"
+                    }
+                ) {
                     Text("OK")
                 }
             }
         },
-
-        title = { Text(modifier = Modifier.fillMaxWidth().wrapContentWidth(Alignment.CenterHorizontally),text = title, fontFamily = Typography.headlineSmall.fontFamily, fontSize = 16.sp, lineHeight = 20.sp,fontWeight = FontWeight.Bold) },
-        text = { Text (modifier = Modifier.fillMaxWidth().wrapContentWidth(Alignment.CenterHorizontally),text = description, fontStyle = Typography.bodySmall.fontStyle, color = colorResource(R.color.SubTextDark)) }
+        title = {
+            Text(
+                modifier = Modifier.fillMaxWidth().wrapContentWidth(Alignment.CenterHorizontally),
+                text = title,
+                fontFamily = Typography.headlineSmall.fontFamily,
+                fontSize = 16.sp,
+                lineHeight = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Text(
+                modifier = Modifier.fillMaxWidth().wrapContentWidth(Alignment.CenterHorizontally),
+                text = description,
+                fontStyle = Typography.bodySmall.fontStyle,
+                color = colorResource(R.color.SubTextDark)
+            )
+        }
     )
 }
 

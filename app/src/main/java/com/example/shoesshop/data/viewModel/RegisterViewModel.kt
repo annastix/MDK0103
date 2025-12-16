@@ -4,11 +4,12 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.shoesshop.data.RetrofitInstance
 import com.example.shoesshop.data.models.RegisterRequest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import com.example.shoesshop.data.RetrofitInstance
 import java.util.regex.Pattern
 
 data class RegisterAccountUiState(
@@ -17,8 +18,6 @@ data class RegisterAccountUiState(
 )
 
 class RegisterAccountViewModel : ViewModel() {
-    var email: String = ""
-    var password: String = ""
     private val _uiState = MutableStateFlow(RegisterAccountUiState())
     val uiState: StateFlow<RegisterAccountUiState> = _uiState
 
@@ -28,7 +27,7 @@ class RegisterAccountViewModel : ViewModel() {
     )
 
     fun clearError() {
-        _uiState.value = _uiState.value.copy(errorMessage = null)
+        _uiState.update { it.copy(errorMessage = null) }
     }
 
     fun register(
@@ -37,127 +36,89 @@ class RegisterAccountViewModel : ViewModel() {
         email: String,
         password: String,
         isPolicyAccepted: Boolean,
-        onSuccess: () -> Unit,
-        onError: (String) -> Unit
+        onSuccess: () -> Unit
     ) {
-        this.email = email
-        this.password = password
-
-        // Сначала проверяем обязательные поля
-        if (name.isEmpty()) {
-            showError("Имя не может быть пустым")
-            return
-        }
-
-        if (email.isEmpty()) {
-            showError("Email не может быть пустым")
-            return
-        }
-
-        // Проверяем email
-        val emailError = getEmailError(email)
-        if (emailError != null) {
-            showError(emailError)
-            return
-        }
-
-        if (password.isEmpty()) {
-            showError("Пароль не может быть пустым")
-            return
-        }
-
-        if (!isPolicyAccepted) {
-            showError("Необходимо согласиться с политикой конфиденциальности")
+        // Валидация
+        val validationError = validateFields(name, email, password, isPolicyAccepted)
+        if (validationError != null) {
+            _uiState.update { it.copy(errorMessage = validationError) }
             return
         }
 
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true)
+            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
             try {
                 val signUpData = RegisterRequest(email, password)
                 val response = RetrofitInstance.userManagementService.signUp(signUpData)
 
-                if (response.isSuccessful) {
-                    response.body()?.let {
-                        Log.v("SignUp", "User registered successfully: ${it.email}")
-                        // Сохраняем данные в SharedPreferences перед переходом на OTP
-                        saveCredentialsToSharedPreferences(context)
-                        onSuccess()
-                    } ?: run {
-                        // Если body() вернул null
-                        onError("Пустой ответ от сервера")
-                    }
+                // ДОБАВЬТЕ ЛОГИРОВАНИЕ
+                Log.d("RegisterViewModel", "Response code: ${response.code()}")
+                Log.d("RegisterViewModel", "Response message: ${response.message()}")
+                Log.d("RegisterViewModel", "Response body: ${response.body()}")
+                Log.d("RegisterViewModel", "Response error body: ${response.errorBody()?.string()}")
+
+                if (response.isSuccessful && response.body() != null) {
+                    // Сохраняем данные
+                    saveCredentialsToSharedPreferences(context, email, password)
+                    onSuccess()
                 } else {
+                    // ПОЛУЧАЕМ ТЕКСТ ОШИБКИ ОТ СЕРВЕРА
+                    val errorBody = response.errorBody()?.string()
                     val errorMessage = when (response.code()) {
-                        422 -> "Пользователь уже существует или неверные данные"
+                        422 -> {
+                            if (errorBody?.contains("already exists", ignoreCase = true) == true) {
+                                "Пользователь с таким email уже существует"
+                            } else {
+                                "Пользователь с таким email уже существует или неверные данные"
+                            }
+                        }
                         500 -> "Ошибка сервера"
-                        else -> "Ошибка регистрации: ${response.message()}"
+                        else -> "Ошибка регистрации (код: ${response.code()})"
                     }
-                    onError(errorMessage)
+                    _uiState.update { it.copy(errorMessage = errorMessage) }
+                    Log.e("RegisterViewModel", "Error: $errorMessage, Body: $errorBody")
                 }
             } catch (e: Exception) {
-                showError("Ошибка сети. Проверьте подключение к Интернету\n"+e.message.toString())
-                onError("Ошибка сети: ${e.message}")
+                val error = "Ошибка сети: ${e.message ?: "Проверьте подключение"}"
+                _uiState.update { it.copy(errorMessage = error) }
+                Log.e("RegisterViewModel", "Exception: $e")
             } finally {
-                _uiState.value = _uiState.value.copy(isLoading = false)
+                _uiState.update { it.copy(isLoading = false) }
             }
         }
     }
 
-    private fun saveCredentialsToSharedPreferences(context: Context) {
-        val sharedPreferences = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
-        val editor = sharedPreferences.edit()
-        editor.putString("user_email", email)
-        editor.putString("user_password", password)
-        editor.putBoolean("is_user_verified", false) // пока не верифицирован
-        editor.apply()
-        Log.d("SignUpViewModel", "Credentials saved to SharedPreferences: $email")
-    }
-
-    private fun showError(message: String) {
-        _uiState.value = _uiState.value.copy(errorMessage = message)
-    }
-
-    private fun getEmailError(email: String): String? {
+    private fun validateFields(
+        name: String,
+        email: String,
+        password: String,
+        isPolicyAccepted: Boolean
+    ): String? {
         return when {
+            name.isEmpty() -> "Имя не может быть пустым"
+
             email.isEmpty() -> "Email не может быть пустым"
-            email.trim() != email -> "Email не должен содержать пробелы в начале или конце"
-            !email.contains("@") -> "Email должен содержать символ @"
-            else -> {
-                val parts = email.split("@")
-                if (parts.size != 2) return "Некорректный формат email"
+            !EMAIL_PATTERN.matcher(email).matches() -> "Некорректный формат email"
 
-                val localPart = parts[0]
-                val domainPart = parts[1]
+            password.isEmpty() -> "Пароль не может быть пустым"
 
-                // Проверка локальной части (до @)
-                if (localPart.isEmpty()) return "Имя пользователя не может быть пустым"
-                if (localPart.startsWith(".") || localPart.endsWith("."))
-                    return "Имя пользователя не может начинаться или заканчиваться точкой"
-                if (localPart.contains(".."))
-                    return "Имя пользователя не может содержать две точки подряд"
-                if (localPart.length > 64)
-                    return "Имя пользователя слишком длинное (максимум 64 символа)"
+            !isPolicyAccepted -> "Необходимо согласиться с политикой конфиденциальности"
 
-                // Проверка доменной части
-                if (domainPart.isEmpty()) return "Доменная часть не может быть пустой"
-                if (!domainPart.contains(".")) return "Доменное имя должно содержать точку"
-
-                val domainParts = domainPart.split(".")
-                if (domainParts.size < 2) return "Некорректный формат домена"
-
-                // Проверка TLD (последней части)
-                val tld = domainParts.last()
-                if (tld.length < 2) return "Старший домен должен содержать минимум 2 символа"
-
-                // Основная проверка через регулярное выражение
-                if (!EMAIL_PATTERN.matcher(email).matches()) {
-                    return "Некорректный формат email. Пример: example@domain.com"
-                }
-
-                null
-            }
+            else -> null
         }
+    }
+
+    private fun saveCredentialsToSharedPreferences(
+        context: Context,
+        email: String,
+        password: String
+    ) {
+        context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+            .edit()
+            .putString("user_email", email)
+            .putString("user_password", password)
+            .putBoolean("is_user_verified", false)
+            .apply()
     }
 }
