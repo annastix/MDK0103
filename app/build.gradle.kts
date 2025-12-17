@@ -54,6 +54,8 @@ dependencies {
     implementation(libs.androidx.navigation.runtime.ktx)
     implementation("androidx.core:core-splashscreen:1.0.0")
     implementation("io.coil-kt.coil3:coil-compose:3.2.0")
+    implementation("com.google.accompanist:accompanist-pager:0.28.0")
+    implementation("com.google.accompanist:accompanist-pager-indicators:0.28.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     implementation(libs.navigation.compose)

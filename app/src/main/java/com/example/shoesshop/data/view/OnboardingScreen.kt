@@ -16,14 +16,16 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.shoesshop.R
 import com.example.shoesshop.ui.theme.AppTypography
 import com.example.shoesshop.ui.theme.Typography
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.rememberPagerState
+import kotlinx.coroutines.launch
 
 enum class OnboardingType {
     FIRST, SECOND, THIRD
@@ -37,7 +39,7 @@ data class OnboardingSlide(
     val tabsImageRes: Int
 )
 
-@OptIn(ExperimentalAnimationApi::class)
+@OptIn(ExperimentalAnimationApi::class, ExperimentalPagerApi::class)
 @Composable
 fun OnboardingScreen(
     onFinish: () -> Unit
@@ -68,7 +70,15 @@ fun OnboardingScreen(
         )
     }
 
+    // состояние пейджера (для свайпа)
+    val pagerState = rememberPagerState(initialPage = 0)
+    val coroutineScope = rememberCoroutineScope()
+
+    // логический currentPage, синхронизированный с pagerState
     var currentPage by remember { mutableIntStateOf(0) }
+    LaunchedEffect(pagerState.currentPage) {
+        currentPage = pagerState.currentPage
+    }
 
     Column(
         modifier = Modifier
@@ -76,11 +86,11 @@ fun OnboardingScreen(
             .background(
                 brush = Brush.linearGradient(
                     colors = listOf(
-                        colorResource(R.color.Accent), // Начальный цвет
-                        colorResource(R.color.Disable)  // Конечный цвет
+                        colorResource(R.color.Accent),
+                        colorResource(R.color.Disable)
                     ),
-                    start = Offset(0f, 0f),  // Начало градиента (левый верхний угол)
-                    end = Offset.Infinite     // Конец градиента (правый нижний угол)
+                    start = Offset(0f, 0f),
+                    end = Offset.Infinite
                 )
             )
     ) {
@@ -90,22 +100,30 @@ fun OnboardingScreen(
                 .weight(1f)
                 .fillMaxWidth()
         ) {
-            AnimatedContent(
-                targetState = currentPage,
-                transitionSpec = {
-                    slideIntoContainer(
-                        AnimatedContentTransitionScope.SlideDirection.Left,
-                        tween(300)
-                    ) with slideOutOfContainer(
-                        AnimatedContentTransitionScope.SlideDirection.Left,
-                        tween(300)
-                    )
-                }
+            // Листание свайпом между слайдами
+            HorizontalPager(
+                count = slides.size,
+                state = pagerState,
+                modifier = Modifier.fillMaxSize()
             ) { page ->
-                when (slides[page].type) {
-                    OnboardingType.FIRST -> FirstSlide(slides[page])
-                    OnboardingType.SECOND -> SecondSlide(slides[page])
-                    OnboardingType.THIRD -> ThirdSlide(slides[page])
+                // Внутри оставляем ту же анимацию и разметку, что и была
+                AnimatedContent(
+                    targetState = page,
+                    transitionSpec = {
+                        slideIntoContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Left,
+                            tween(300)
+                        ) with slideOutOfContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Left,
+                            tween(300)
+                        )
+                    }
+                ) { targetPage ->
+                    when (slides[targetPage].type) {
+                        OnboardingType.FIRST -> FirstSlide(slides[targetPage])
+                        OnboardingType.SECOND -> SecondSlide(slides[targetPage])
+                        OnboardingType.THIRD -> ThirdSlide(slides[targetPage])
+                    }
                 }
             }
         }
@@ -113,7 +131,10 @@ fun OnboardingScreen(
         Button(
             onClick = {
                 if (currentPage < slides.lastIndex) {
-                    currentPage++
+                    // листаем на следующую страницу анимацией
+                    coroutineScope.launch {
+                        pagerState.animateScrollToPage(currentPage + 1)
+                    }
                 } else {
                     onFinish()
                 }
@@ -140,8 +161,6 @@ fun FirstSlide(slide: OnboardingSlide) {
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-
-
         Spacer(modifier = Modifier.height(40.dp))
         Text(
             text = stringResource(slide.titleRes),
@@ -161,7 +180,6 @@ fun FirstSlide(slide: OnboardingSlide) {
             modifier = Modifier.fillMaxWidth(),
             contentScale = ContentScale.FillWidth
         )
-
 
         Spacer(modifier = Modifier.height(26.dp))
 
