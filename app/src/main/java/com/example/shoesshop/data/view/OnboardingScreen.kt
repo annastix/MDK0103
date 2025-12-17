@@ -141,6 +141,8 @@ fun FirstSlide(slide: OnboardingSlide) {
         modifier = Modifier.fillMaxSize()
     ) {
 
+
+        Spacer(modifier = Modifier.height(40.dp))
         Text(
             text = stringResource(slide.titleRes),
             modifier = Modifier

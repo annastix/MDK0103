@@ -1,15 +1,26 @@
 package com.example.shoesshop.data.view
 
+import android.Manifest
+import android.net.Uri
+import android.os.Environment
+import android.util.Log
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -17,10 +28,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider
+import coil3.compose.rememberAsyncImagePainter
 import com.example.shoesshop.ui.theme.AppTypography
 import com.example.shoesshop.R
 import com.example.shoesshop.ui.components.RegisterButton
 import com.example.shoesshop.ui.theme.Typography
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import kotlin.text.isNotEmpty
 
 @Composable
@@ -31,11 +48,82 @@ fun ProfileScreen() {
     var address by remember { mutableStateOf("Nigeria") }
     var phone by remember { mutableStateOf("") }
 
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+    var tempPhotoFile by remember { mutableStateOf<File?>(null) }
+
     // Проверка, изменились ли данные
-    val hasChanges by remember(name, lastName, address, phone) {
+    val hasChanges by remember(name, lastName, address, phone, selectedImageUri) {
         derivedStateOf {
-            name != "Еmmanuel" || lastName != "Oyiboke" || address != "Nigeria" || phone != ""
+            name != "Еmmanuel" || lastName != "Oyiboke" || address != "Nigeria" || phone != "" || selectedImageUri != null
         }
+    }
+    val context = LocalContext.current
+
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture(),
+        onResult = { isSuccess ->
+            if (isSuccess) {
+                tempPhotoFile?.let { file ->
+                    selectedImageUri = Uri.fromFile(file)
+                    Toast.makeText(context, "Фото сохранено", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                Toast.makeText(context, "Ошибка при съёмке фото", Toast.LENGTH_SHORT).show()
+            }
+            tempPhotoFile = null
+        }
+    )
+
+    fun createImageFile(): File {
+        val timeStamp = SimpleDateFormat("ddMMyyyy_HHmmss", Locale.getDefault()).format(Date())
+        val storageDirectory = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+
+        if (storageDirectory != null && !storageDirectory.exists()) {
+            storageDirectory.mkdirs()
+        }
+
+        Log.d("PHOTO_DEBUG", "Директория: ${storageDirectory?.absolutePath}")
+        Log.d("PHOTO_DEBUG", "Директория существует: ${storageDirectory?.exists()}")
+
+        return File.createTempFile(
+            "JPEG_${timeStamp}_",
+            ".jpg",
+            storageDirectory
+        ).apply {
+            createNewFile()
+            Log.d("PHOTO_DEBUG", "Файл создан: $absolutePath")
+            Log.d("PHOTO_DEBUG", "Файл существует: ${exists()}")
+        }
+    }
+
+    fun openCamera() {
+        try {
+            val photoFile = createImageFile()
+            tempPhotoFile = photoFile
+            val photoUri = FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.fileprovider",
+                photoFile
+            )
+            cameraLauncher.launch(photoUri)
+        } catch (e: Exception) {
+            Toast.makeText(context, "Ошибка при съёмке фото: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted ->
+            if (isGranted) {
+                openCamera()
+            } else {
+                Toast.makeText(context, "Нет разрешения на использование камеры", Toast.LENGTH_SHORT).show()
+            }
+        }
+    )
+
+    fun checkCameraPermissionAndOpen() {
+        cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
     }
 
     Surface(
@@ -105,7 +193,18 @@ fun ProfileScreen() {
                         .size(100.dp)
                         .clip(CircleShape)
                         .background(Color(0xFFE0E0E0))
-                )
+                ) {
+                    if (selectedImageUri != null) {
+                        Image(
+                            painter = rememberAsyncImagePainter(selectedImageUri),
+                            contentDescription = "Profile photo",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(CircleShape)
+                        )
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -115,6 +214,23 @@ fun ProfileScreen() {
                     style = Typography.bodyMedium
                 )
             }
+
+            if (isEditing) {
+                TextButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = { checkCameraPermissionAndOpen() },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = colorResource(R.color.Accent)
+                    )
+                ) {
+                    Text(
+                        text = stringResource(R.string.change_picture),
+                        color = colorResource(R.color.Accent),
+                        style = Typography.displaySmall
+                    )
+                }
+            }
+
             Spacer(modifier = Modifier.height(35.dp))
             // Поля профиля
             Column(
@@ -160,15 +276,13 @@ fun ProfileScreen() {
             // Кнопка сохранения (только в режиме редактирования)
             if (isEditing) {
                 RegisterButton(
-                    text = "Сохранить",
+                    text = stringResource(R.string.save_now),
                     onClick = {
                         // Здесь логика сохранения данных
-                        // Например, вызов ViewModel для сохранения
-                        isEditing = false
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp),
+                        .height(50.dp),
                     enabled = hasChanges // Кнопка активна только если есть изменения
                 )
             }
