@@ -1,5 +1,6 @@
 package com.example.shoesshop.data.service
 
+import com.example.shoesshop.data.models.ForgotPasswordRequest
 import com.example.shoesshop.data.models.RegisterRequest
 import com.example.shoesshop.data.models.SignInRequest
 import com.example.shoesshop.data.models.VerifyOTPRequest
@@ -29,6 +30,10 @@ interface UserManagementService {
     @Headers("apikey: $API_KEY", "Content-Type: application/json")
     @POST("auth/v1/otp")
     suspend fun resendOtp(@Body otpRequest: ResendOTPRequest): Response<Unit>
+
+    @Headers("apikey: $API_KEY", "Content-Type: application/json")
+    @POST("auth/v1/recover")
+    suspend fun recoverPassword(@Body body: ForgotPasswordRequest): Response<Unit>
 }
 
 data class ResendOTPRequest(
