@@ -144,7 +144,7 @@ fun FirstSlide(slide: OnboardingSlide) {
         Text(
             text = stringResource(slide.titleRes),
             modifier = Modifier
-                .padding(top = 29.dp, start = 54.dp, end = 54.dp)
+                .padding(top = 39.dp, start = 54.dp, end = 54.dp)
                 .fillMaxWidth(),
             textAlign = TextAlign.Center,
             style = Typography.headlineSmall,

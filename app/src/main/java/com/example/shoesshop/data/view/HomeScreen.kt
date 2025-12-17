@@ -1,6 +1,7 @@
 
 package com.example.shoesshop.data.view
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -23,6 +24,7 @@ import com.example.shoesshop.R
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -154,12 +156,14 @@ fun HomeScreen(
                             onClick = { onCartClick() },
                             modifier = Modifier.size(56.dp),
                             containerColor = colorResource(R.color.Accent),
-                            contentColor = colorResource(R.color.white)
+                            contentColor = colorResource(R.color.white),
+                            shape = CircleShape
                         ) {
                             Icon(
                                 painter = painterResource(id = R.drawable.bag_2),
                                 contentDescription = "Cart",
-                                modifier = Modifier.size(24.dp)
+                                modifier = Modifier
+                                    .size(24.dp)
                             )
                         }
                     }
@@ -336,7 +340,7 @@ fun HomeScreen(
                         }
                     }
                     3 -> {
-                        { }
+                        ProfileScreen()
                     }
                 }
             }
@@ -460,65 +464,72 @@ private fun PromotionsSection() {
             )
         }
 
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(120.dp),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = Color(0xFF4CAF50)
-            )
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Левая часть с текстом
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(
-                        text = "Summer Sale",
-                        style = Typography.headlineMedium.copy(
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                    )
+        Image(
+            modifier = Modifier.fillMaxSize(),
+            painter = painterResource(R.drawable.summer_sale),
+            contentScale = ContentScale.Crop,
+            contentDescription = "sale" // Добавьте описание
+        )
 
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    Text(
-                        text = "15% OFF",
-                        style = Typography.headlineMedium.copy(
-                            fontSize = 32.sp,
-                            fontWeight = FontWeight.ExtraBold,
-                            color = Color.White
-                        )
-                    )
-                }
-
-                // Правая часть с кнопкой
-                TextButton(
-                    onClick = {
-                        // Навигация на акции
-                    },
-                    modifier = Modifier
-                        .background(Color.White, RoundedCornerShape(12.dp))
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                ) {
-                    Text(
-                        text = "Смотреть",
-                        style = Typography.labelMedium.copy(
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF4CAF50)
-                        )
-                    )
-                }
-            }
-        }
+//        Card(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .height(120.dp),
+//            shape = RoundedCornerShape(16.dp),
+//            colors = CardDefaults.cardColors(
+//                containerColor = Color(0xFF4CAF50)
+//            )
+//        ) {
+//            Row(
+//                modifier = Modifier
+//                    .fillMaxSize()
+//                    .padding(16.dp),
+//                verticalAlignment = Alignment.CenterVertically
+//            ) {
+//                // Левая часть с текстом
+//                Column(
+//                    modifier = Modifier.weight(1f)
+//                ) {
+//                    Text(
+//                        text = "Summer Sale",
+//                        style = Typography.headlineMedium.copy(
+//                            fontSize = 24.sp,
+//                            fontWeight = FontWeight.Bold,
+//                            color = Color.White
+//                        )
+//                    )
+//
+//                    Spacer(modifier = Modifier.height(4.dp))
+//
+//                    Text(
+//                        text = "15% OFF",
+//                        style = Typography.headlineMedium.copy(
+//                            fontSize = 32.sp,
+//                            fontWeight = FontWeight.ExtraBold,
+//                            color = Color.White
+//                        )
+//                    )
+//                }
+//
+//                // Правая часть с кнопкой
+//                TextButton(
+//                    onClick = {
+//                        // Навигация на акции
+//                    },
+//                    modifier = Modifier
+//                        .background(Color.White, RoundedCornerShape(12.dp))
+//                        .padding(horizontal = 16.dp, vertical = 8.dp)
+//                ) {
+//                    Text(
+//                        text = "Смотреть",
+//                        style = Typography.labelMedium.copy(
+//                            fontWeight = FontWeight.Bold,
+//                            color = Color(0xFF4CAF50)
+//                        )
+//                    )
+//                }
+////            }
+//        }
     }
 }
 
