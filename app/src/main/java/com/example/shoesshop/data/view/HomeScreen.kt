@@ -1,3 +1,4 @@
+// data/view/HomeScreen.kt
 package com.example.shoesshop.data.view
 
 import androidx.compose.foundation.Image
@@ -29,25 +30,34 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.shoesshop.R
 import com.example.shoesshop.data.models.Categories
-import com.example.shoesshop.data.models.ProductDto
+import com.example.shoesshop.data.models.Products
 import com.example.shoesshop.data.viewModel.HomeViewModel
+import com.example.shoesshop.ui.components.ProductCard
 import com.example.shoesshop.ui.theme.AppTypography
 import com.example.shoesshop.ui.theme.Typography
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    onProductClick: (ProductDto) -> Unit = {},
+    onProductClick: (Products) -> Unit = {},
     onCartClick: () -> Unit = {},
     onSearchClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
+    onCategoryClick: (String, String) -> Unit = { _, _ -> },
     viewModel: HomeViewModel = viewModel()
 ) {
     var selected by rememberSaveable { mutableIntStateOf(0) }
 
     val categoriesState by viewModel.categories
-    val productsState by viewModel.products
-    var selectedCategory by remember { mutableStateOf("All") }
+    val uiProductsState by viewModel.uiProducts
+    var selectedCategoryId by remember { mutableStateOf<String?>(null) }
+
+    // по умолчанию выбираем первую категорию
+    LaunchedEffect(categoriesState) {
+        if (selectedCategoryId == null && categoriesState.isNotEmpty()) {
+            selectedCategoryId = categoriesState.first().id
+        }
+    }
 
     Scaffold(
         bottomBar = { BottomBar(selected) { selected = it; if (it == 1) onCartClick() } }
@@ -75,17 +85,19 @@ fun HomeScreen(
                             item {
                                 CategorySection(
                                     categories = categoriesState,
-                                    selectedCategory = selectedCategory,
-                                    onCategorySelected = { category ->
-                                        selectedCategory = category
+                                    selectedCategoryId = selectedCategoryId,
+                                    onCategorySelected = { cat ->
+                                        selectedCategoryId = cat.id
+                                        onCategoryClick(cat.id, cat.name)
                                     }
                                 )
                             }
 
                             item {
                                 ProductsSection(
-                                    products = productsState,
-                                    onProductClick = onProductClick
+                                    products = uiProductsState,
+                                    onProductClick = onProductClick,
+                                    onFavoriteClick = { /* TODO */ }
                                 )
                             }
 
@@ -269,8 +281,8 @@ private fun BottomBar(selected: Int, onSelectedChange: (Int) -> Unit) {
 @Composable
 private fun CategorySection(
     categories: List<Categories>,
-    selectedCategory: String,
-    onCategorySelected: (String) -> Unit
+    selectedCategoryId: String?,
+    onCategorySelected: (Categories) -> Unit
 ) {
     Column {
         Text(
@@ -285,8 +297,8 @@ private fun CategorySection(
             items(categories) { category ->
                 CategoryChip(
                     category = category.name,
-                    isSelected = selectedCategory == category.name,
-                    onClick = { onCategorySelected(category.name) }
+                    isSelected = selectedCategoryId == category.id,
+                    onClick = { onCategorySelected(category) }
                 )
             }
         }
@@ -316,8 +328,9 @@ private fun CategoryChip(
 
 @Composable
 private fun ProductsSection(
-    products: List<ProductDto>,
-    onProductClick: (ProductDto) -> Unit
+    products: List<Products>,
+    onProductClick: (Products) -> Unit,
+    onFavoriteClick: (Products) -> Unit
 ) {
     Column {
         Row(
@@ -341,26 +354,11 @@ private fun ProductsSection(
 
         LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             items(products) { product ->
-                Column(
-                    modifier = Modifier
-                        .width(160.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(Color.White)
-                        .clickable { onProductClick(product) }
-                        .padding(8.dp)
-                ) {
-                    Text(
-                        text = product.title,
-                        style = Typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
-                        maxLines = 2
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "P${product.cost}",
-                        style = Typography.bodyMedium,
-                        color = colorResource(R.color.Accent)
-                    )
-                }
+                ProductCard(
+                    product = product,
+                    onProductClick = { onProductClick(product) },
+                    onFavoriteClick = { onFavoriteClick(product) }
+                )
             }
         }
     }
@@ -389,7 +387,8 @@ private fun PromotionsSection() {
         }
 
         Image(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxWidth(),
             painter = painterResource(R.drawable.summer_sale),
             contentScale = ContentScale.Crop,
             contentDescription = "sale"

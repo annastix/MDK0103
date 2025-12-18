@@ -4,6 +4,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.shoesshop.data.view.CatalogScreen
 import com.example.shoesshop.data.view.CreateNewPasswordScreen
 import com.example.shoesshop.data.view.ForgotPasswordScreen
 import com.example.shoesshop.data.view.HomeScreen
@@ -55,7 +56,10 @@ fun NavigationApp(
             HomeScreen(
                 {},
                 {},
-                {}
+                {},
+                onCategoryClick =  { id, title ->
+                    navController.navigate("catalog/$id/$title")
+                }
             )
         }
 
@@ -75,6 +79,19 @@ fun NavigationApp(
             CreateNewPasswordScreen(
                 onBackClick = { navController.popBackStack() },
                 onPasswordChanged = { navController.navigate("sign_in") }
+            )
+        }
+        composable(
+            route = "catalog/{categoryId}/{categoryName}"
+        ) { backStackEntry ->
+            val categoryId = backStackEntry.arguments?.getString("categoryId") ?: ""
+            val categoryName = backStackEntry.arguments?.getString("categoryName") ?: ""
+
+            CatalogScreen(
+                categoryId = categoryId,
+                categoryName = categoryName,
+                onBackClick = { navController.popBackStack() },
+                onProductClick = { /* TODO: открыть детали товара */ }
             )
         }
     }

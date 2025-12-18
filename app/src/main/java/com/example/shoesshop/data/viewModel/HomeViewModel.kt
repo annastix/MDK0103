@@ -1,3 +1,4 @@
+// data/viewModel/HomeViewModel.kt
 package com.example.shoesshop.data.viewModel
 
 import android.util.Log
@@ -5,9 +6,11 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.shoesshop.R
 import com.example.shoesshop.data.RetrofitInstance
 import com.example.shoesshop.data.models.Categories
 import com.example.shoesshop.data.models.ProductDto
+import com.example.shoesshop.data.models.Products
 import kotlinx.coroutines.launch
 
 class HomeViewModel : ViewModel() {
@@ -18,8 +21,11 @@ class HomeViewModel : ViewModel() {
     private val _categories = mutableStateOf<List<Categories>>(emptyList())
     val categories: State<List<Categories>> = _categories
 
-    private val _products = mutableStateOf<List<ProductDto>>(emptyList())
-    val products: State<List<ProductDto>> = _products
+    private val _productsDto = mutableStateOf<List<ProductDto>>(emptyList())
+    val productsDto: State<List<ProductDto>> = _productsDto
+
+    private val _uiProducts = mutableStateOf<List<Products>>(emptyList())
+    val uiProducts: State<List<Products>> = _uiProducts
 
     init {
         loadCategories()
@@ -41,9 +47,20 @@ class HomeViewModel : ViewModel() {
 
     private fun loadProducts() {
         viewModelScope.launch {
-            runCatching { productsApi.getProducts() }
+            runCatching { productsApi.getThreeProducts() }
                 .onSuccess { list ->
-                    _products.value = list
+                    _productsDto.value = list
+                    _uiProducts.value = list.map { dto ->
+                        Products(
+                            id = dto.id,
+                            name = dto.title,
+                            price = "₽${dto.cost}",
+                            originalPrice = "",
+                            category = if (dto.isBestSeller) "BEST SELLER" else "",
+                            imageUrl = "",
+                            imageResId = R.drawable.nike_zoom_winflo_3_831561_001_mens_running_shoes_11550187236tiyyje6l87_prev_ui_3  // твой drawable
+                        )
+                    }
                 }
                 .onFailure { e ->
                     Log.e("HomeViewModel", "loadProducts error", e)
