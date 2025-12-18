@@ -1,48 +1,32 @@
 package com.example.shoesshop.data.view
 
-import android.widget.Toast
+import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.shoesshop.data.viewModel.VerificationViewModel
-import com.example.shoesshop.ui.components.BackButton
 import com.example.shoesshop.R
+import com.example.shoesshop.data.viewModel.ResetPasswordOTPViewModel
 import com.example.shoesshop.ui.components.AlertMessage
+import com.example.shoesshop.ui.components.BackButton
 import com.example.shoesshop.ui.components.InputTextBox
 import com.example.shoesshop.ui.components.RegisterButton
 import com.example.shoesshop.ui.theme.Typography
 
 @Composable
-fun VerificationScreen(
+fun ResetPasswordOTPScreen(
     modifier: Modifier = Modifier,
-    viewModel: VerificationViewModel = viewModel(),
+    viewModel: ResetPasswordOTPViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     onVerificationSuccess: () -> Unit = {}
 ) {
@@ -50,11 +34,6 @@ fun VerificationScreen(
     var token by remember { mutableStateOf("") }
     val uiState by viewModel.uiState.collectAsState()
 
-    val userEmail by remember {
-        mutableStateOf(viewModel.getStoredEmail(context))
-    }
-
-    // Показываем AlertDialog при наличии ошибки
     if (uiState.errorMessage != null) {
         AlertMessage(
             title = "Ошибка",
@@ -64,7 +43,7 @@ fun VerificationScreen(
         )
     }
 
-    // Показываем индикатор загрузки
+    // затемнение и спиннер по всему экрану, как было
     if (uiState.isLoading) {
         Box(
             modifier = Modifier
@@ -84,7 +63,6 @@ fun VerificationScreen(
     ) {
         Spacer(modifier = Modifier.weight(0.2f))
 
-        // Верхняя часть с кнопкой назад
         BackButton(
             onClick = onBackClick,
             modifier = Modifier.padding(top = 16.dp)
@@ -129,52 +107,41 @@ fun VerificationScreen(
 
         Spacer(modifier = Modifier.weight(0.2f))
 
-        RegisterButton(
-            modifier = Modifier,
-            text = stringResource(R.string.send),
-            onClick = {
-                if (token.length != 6) {
-                    return@RegisterButton
+        // Индикация на месте кнопки: либо спиннер, либо RegisterButton
+        if (uiState.isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .size(48.dp)
+                    .align(Alignment.CenterHorizontally),
+                color = colorResource(R.color.Accent)
+            )
+        } else {
+            RegisterButton(
+                modifier = Modifier,
+                text = stringResource(R.string.send),
+                enabled = token.length == 6,
+                onClick = {
+                    viewModel.verifyOtp(
+                        token = token,
+                        context = context,
+                        onSuccess = {
+                            token = ""
+                            onVerificationSuccess()
+                        },
+                        onError = { error ->
+                            Log.e("ResetPasswordOTPScreen", "OTP error: $error")
+                        }
+                    )
                 }
-
-                viewModel.verifyOTP(
-                    token = token,
-                    context = context,
-                    onSuccess = {
-                        token = ""
-                        onVerificationSuccess()
-                    },
-                    onError = { error ->
-
-                    }
-                )
-            },
-            enabled = token.length == 6
-        )
+            )
+        }
 
         Spacer(modifier = Modifier.weight(1f))
-
-        // Кнопка повторной отправки OTP
-//        Row(
-//            modifier = Modifier.fillMaxWidth(),
-//            horizontalArrangement = Arrangement.Center
-//        ) {
-//            TextButton(
-//                onClick = {
-//                    Toast.makeText(context, "Запрос на повторную отправку OTP", Toast.LENGTH_SHORT).show()
-//                }
-//            ) {
-//                Text(
-//                    text = "Отправить код повторно",
-//                    color = colorResource(R.color.Accent),
-//                    style = Typography.bodyMedium
-//                )
-//            }
-//        }
     }
 }
+
 @Preview
 @Composable
-private fun VerificationScreenPreview() {
-    VerificationScreen()
+private fun ResetPasswordOTPScreenPreview() {
+    ResetPasswordOTPScreen()
 }

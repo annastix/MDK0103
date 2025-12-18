@@ -33,9 +33,9 @@
     <string name="otp_verification">OTP проверка</string>
     <string name="check_email_please">Пожалуйста, проверьте свою электронную почту, чтобы увидеть код подтверждения</string>
     <string name="otp_code">OTP Код</string>
-    <string name="set_new_passwd">задать новый пароль</string>
+    <string name="set_new_passwd">Задать Новый Пароль</string>
     <string name="set_new_passwd_to_account">Установите новый пароль для входа в вашу учетную запись</string>
-    <string name="confirm_passwd">подтверждение пароля</string>
+    <string name="confirm_passwd">Подтверждение пароля</string>
     <string name="main">Главная</string>
     <string name="search">Поиск</string>
     <string name="category">Категории</string>
