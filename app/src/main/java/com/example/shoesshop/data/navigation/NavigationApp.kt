@@ -96,9 +96,12 @@ fun NavigationApp(
                 categoryId = categoryId,
                 categoryName = categoryName,
                 onBackClick = { navController.popBackStack() },
-                onProductClick = { /* TODO: открыть детали товара */ }
+                onProductClick = { product ->
+                    navController.navigate("details/${product.id}")
+                }
             )
         }
+
 
         composable(
             route = "details/{productId}",
