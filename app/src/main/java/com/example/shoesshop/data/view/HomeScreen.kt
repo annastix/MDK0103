@@ -239,6 +239,11 @@ fun HomeScreen(
 
                         Spacer(modifier = Modifier.width(12.dp))
 
+                        Text(
+                            text = "Категорий: ${categoriesState.size}",
+                            style = Typography.bodyMedium
+                        )
+
                         Box(
                             modifier = Modifier
                                 .size(48.dp)
