@@ -71,5 +71,7 @@
     <string name="save_now">Save now</string>
     <string name="confirm">confirm</string>
     <string name="map">Map</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
     <string name="loyalty_card">Loyalty Card</string>
 </resources>
