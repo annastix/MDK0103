@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import coil3.util.CoilUtils.result
 import com.example.shoesshop.R
+import com.example.shoesshop.data.ProductImages
 import com.example.shoesshop.data.RetrofitInstance
 import com.example.shoesshop.data.models.Categories
 import com.example.shoesshop.data.models.ProductDto
@@ -57,7 +58,6 @@ class CatalogViewModel(
         }
     }
 
-
     private fun loadProductsFor(categoryId: String?) {
         viewModelScope.launch {
             runCatching {
@@ -76,7 +76,7 @@ class CatalogViewModel(
                         originalPrice = "",
                         category = if (dto.isBestSeller) "BEST SELLER" else "",
                         imageUrl = "",
-                        imageResId = R.drawable.nike_zoom_winflo_3_831561_001_mens_running_shoes_11550187236tiyyje6l87_prev_ui_3
+                        imageResId = ProductImages.forId(dto.id)
                     )
                 }
             }.onFailure { e ->
@@ -84,6 +84,7 @@ class CatalogViewModel(
             }
         }
     }
+
 
     fun onCategorySelected(category: Categories) {
         _selectedCategoryId.value = category.id

@@ -29,4 +29,11 @@ interface DatabaseProduct {
         @Query("category_id") categoryFilter: String, // "eq.<uuid>"
         @Query("select") select: String = "*"
     ): List<ProductDto>
+
+    @GET("products")
+    suspend fun getProductById(
+        @Query("id") idFilter: String,      // "eq.<id>"
+        @Query("select") select: String = "*"
+    ): List<ProductDto>
+
 }

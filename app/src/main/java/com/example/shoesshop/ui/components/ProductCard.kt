@@ -54,9 +54,13 @@ fun ProductCard(
                     Image(
                         painter = painterResource(id = product.imageResId),
                         contentDescription = product.name,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .fillMaxWidth(1f)   // было 0.95f
+                            .aspectRatio(1.8f)  // было 2.1f
                     )
+
                 } else {
                     // Запасной вариант, если нет изображения
                     Box(
@@ -129,7 +133,7 @@ fun ProductCardPreview() {
             originalPrice = "P850.00",
             category = "BEST SELLER",
             imageUrl = "",
-            imageResId = null // Здесь укажите ID реального изображения для превью
+            imageResId = R.drawable.nike_zoom_winflo_3_831561_001_mens_running_shoes_11550187236tiyyje6l87_prev_ui_3
         ),
         onProductClick = {},
         onFavoriteClick = {}

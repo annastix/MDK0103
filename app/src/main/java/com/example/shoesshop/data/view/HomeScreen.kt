@@ -1,4 +1,3 @@
-// data/view/HomeScreen.kt
 package com.example.shoesshop.data.view
 
 import androidx.compose.foundation.Image
@@ -35,6 +34,11 @@ import com.example.shoesshop.data.viewModel.HomeViewModel
 import com.example.shoesshop.ui.components.ProductCard
 import com.example.shoesshop.ui.theme.AppTypography
 import com.example.shoesshop.ui.theme.Typography
+import android.app.Application
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,7 +48,12 @@ fun HomeScreen(
     onSearchClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
     onCategoryClick: (String, String) -> Unit = { _, _ -> },
-    viewModel: HomeViewModel = viewModel()
+    viewModel: HomeViewModel = viewModel(
+        factory = HomeViewModelFactory(
+            LocalContext.current.applicationContext as Application
+        )
+    )
+
 ) {
     var selected by rememberSaveable { mutableIntStateOf(0) }
 
@@ -411,6 +420,19 @@ private fun CenterText(text: String) {
         Text(text = text, style = Typography.headlineMedium)
     }
 }
+
+class HomeViewModelFactory(
+    private val application: Application
+) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(HomeViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return HomeViewModel(application) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
+    }
+}
+
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable

@@ -2,10 +2,13 @@ package com.example.shoesshop.navigation
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.example.shoesshop.data.view.CatalogScreen
 import com.example.shoesshop.data.view.CreateNewPasswordScreen
+import com.example.shoesshop.data.view.DetailsScreen
 import com.example.shoesshop.data.view.ForgotPasswordScreen
 import com.example.shoesshop.data.view.HomeScreen
 import com.example.shoesshop.data.view.OnboardingScreen
@@ -54,7 +57,9 @@ fun NavigationApp(
         }
         composable("home") {
             HomeScreen(
-                {},
+                onProductClick = { product ->
+                    navController.navigate("details/${product.id}")
+                },
                 {},
                 {},
                 onCategoryClick =  { id, title ->
@@ -92,6 +97,19 @@ fun NavigationApp(
                 categoryName = categoryName,
                 onBackClick = { navController.popBackStack() },
                 onProductClick = { /* TODO: открыть детали товара */ }
+            )
+        }
+
+        composable(
+            route = "details/{productId}",
+            arguments = listOf(
+                navArgument("productId") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val id = backStackEntry.arguments?.getString("productId")!!
+            DetailsScreen(
+                productId = id,
+                onBackClick = { navController.popBackStack() }
             )
         }
     }
