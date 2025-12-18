@@ -1,15 +1,20 @@
+// data/service/UserManagementService.kt
 package com.example.shoesshop.data.service
 
+import com.example.shoesshop.data.models.ForgotPasswordRequest
 import com.example.shoesshop.data.models.RegisterRequest
 import com.example.shoesshop.data.models.SignInRequest
+import com.example.shoesshop.data.models.UpdatePasswordRequest
 import com.example.shoesshop.data.models.VerifyOTPRequest
 import com.example.shoesshop.data.models.VerifyOTPResponse
+import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.Header
 import retrofit2.http.Headers
 import retrofit2.http.POST
-import retrofit2.Response
 
-const val API_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0ZGpuc3V0Y2luem9rcGhxZ2p2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU3NTcyMzAsImV4cCI6MjA4MTMzMzIzMH0.S-3087j4Bp0KLKDC7NPeiEPF2wX2Hayp6t50-ngkvjc"
+const val API_KEY =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0ZGpuc3V0Y2luem9rcGhxZ2p2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU3NTcyMzAsImV4cCI6MjA4MTMzMzIzMH0.S-3087j4Bp0KLKDC7NPeiEPF2wX2Hayp6t50-ngkvjc"
 
 interface UserManagementService {
 
@@ -25,10 +30,22 @@ interface UserManagementService {
     @POST("auth/v1/verify")
     suspend fun verifyOtp(@Body verifyOtpRequest: VerifyOTPRequest): Response<VerifyOTPResponse>
 
-    // Для повторной отправки OTP
     @Headers("apikey: $API_KEY", "Content-Type: application/json")
     @POST("auth/v1/otp")
     suspend fun resendOtp(@Body otpRequest: ResendOTPRequest): Response<Unit>
+
+    // письмо для сброса пароля
+    @Headers("apikey: $API_KEY", "Content-Type: application/json")
+    @POST("auth/v1/recover")
+    suspend fun recoverPassword(@Body body: ForgotPasswordRequest): Response<Unit>
+
+    // обновление пароля по access token
+    @Headers("apikey: $API_KEY", "Content-Type: application/json")
+    @POST("auth/v1/user")
+    suspend fun updatePassword(
+        @Header("Authorization") bearerToken: String,
+        @Body body: UpdatePasswordRequest
+    ): Response<VerifyOTPResponse>
 }
 
 data class ResendOTPRequest(
