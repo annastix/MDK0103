@@ -306,23 +306,29 @@ private fun CategorySection(
 }
 
 @Composable
-private fun CategoryChip(
+fun CategoryChip(
     category: String,
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
     Surface(
         modifier = Modifier
-            .clickable { onClick() }
-            .clip(RoundedCornerShape(16.dp)),
+            .width(108.dp)
+            .height(40.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .clickable { onClick() },
         color = if (isSelected) colorResource(R.color.Accent) else colorResource(R.color.white),
         contentColor = if (isSelected) Color.White else Color.Black
     ) {
-        Text(
-            text = category,
-            style = Typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-        )
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = category,
+                style = Typography.displaySmall
+            )
+        }
     }
 }
 
