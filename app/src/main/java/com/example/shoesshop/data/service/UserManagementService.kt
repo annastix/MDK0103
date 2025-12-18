@@ -3,6 +3,7 @@ package com.example.shoesshop.data.service
 
 import com.example.shoesshop.data.models.ForgotPasswordRequest
 import com.example.shoesshop.data.models.RegisterRequest
+import com.example.shoesshop.data.models.RegisterResponse
 import com.example.shoesshop.data.models.SignInRequest
 import com.example.shoesshop.data.models.UpdatePasswordRequest
 import com.example.shoesshop.data.models.VerifyOTPRequest
@@ -20,7 +21,9 @@ interface UserManagementService {
 
     @Headers("apikey: $API_KEY", "Content-Type: application/json")
     @POST("auth/v1/signup")
-    suspend fun signUp(@Body signUpRequest: RegisterRequest): Response<RegisterRequest>
+    suspend fun signUp(
+        @Body signUpRequest: RegisterRequest
+    ): Response<RegisterResponse>
 
     @Headers("apikey: $API_KEY", "Content-Type: application/json")
     @POST("auth/v1/token?grant_type=password")
