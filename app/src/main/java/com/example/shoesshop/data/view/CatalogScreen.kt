@@ -41,6 +41,7 @@ fun CatalogScreen(
     categoryName: String,
     onBackClick: () -> Unit,
     onProductClick: (Products) -> Unit,
+    onCartClick: () -> Unit = {},                         // переход в корзину
     viewModel: CatalogViewModel = viewModel(
         factory = CatalogViewModelFactory(categoryId)
     ),
@@ -56,6 +57,8 @@ fun CatalogScreen(
     val favouriteUiState by favouriteViewModel.uiState.collectAsStateWithLifecycle()
     val favouriteIds = favouriteUiState.products.map { it.id }.toSet()
 
+    val cartProductIds by cartViewModel.productIdsInCart.collectAsStateWithLifecycle()
+
     // при каждом открытии экрана и при смене категории — обновляем товары
     LaunchedEffect(categoryId) {
         viewModel.onCategorySelected(
@@ -67,9 +70,10 @@ fun CatalogScreen(
         )
     }
 
-    // при каждом открытии каталога обновляем избранное
+    // при каждом открытии каталога обновляем избранное и корзину
     LaunchedEffect(Unit) {
         favouriteViewModel.loadFavourites(context)
+        cartViewModel.loadCart(context)
     }
 
     Scaffold(
@@ -144,6 +148,8 @@ fun CatalogScreen(
                     ) {
                         items(products) { product ->
                             val isFav = favouriteIds.contains(product.id)
+                            val inCart = cartProductIds.contains(product.id)
+
                             ProductCard(
                                 product = product,
                                 isFavorite = isFav,
@@ -156,8 +162,13 @@ fun CatalogScreen(
                                     )
                                 },
                                 onAddClick = {
-                                    cartViewModel.addToCart(context, product)
-                                }
+                                    if (inCart) {
+                                        onCartClick()
+                                    } else {
+                                        cartViewModel.addToCart(context, product)
+                                    }
+                                },
+                                inCart = inCart
                             )
                         }
                     }
@@ -191,7 +202,7 @@ private fun CategoryBar(
                 CategoryChip(
                     category = category.name,
                     isSelected = selectedCategoryId == category.id,
-                    onClick = { onCategorySelected(category) }
+                    onClick = { onCategorySelected(category) },
                 )
             }
         }

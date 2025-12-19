@@ -112,7 +112,10 @@ fun NavigationApp(
                 onProductClick = { product ->
                     navController.navigate("details/${product.id}")
                 },
-                favouriteViewModel = favouriteViewModel
+                favouriteViewModel = favouriteViewModel,
+                onCartClick = {
+                    navController.navigate("my_cart")   // переход в корзину
+                }
             )
         }
 

@@ -76,6 +76,9 @@ fun HomeScreen(
     val favouriteUiState by favouriteViewModel.uiState.collectAsStateWithLifecycle()
     val favouriteIds = favouriteUiState.products.map { it.id }.toSet()
 
+    // состояние корзины (список productId)
+    val cartProductIds by cartViewModel.productIdsInCart.collectAsStateWithLifecycle()
+
     // по умолчанию выбираем первую категорию
     LaunchedEffect(categoriesState) {
         if (selectedCategoryId == null && categoriesState.isNotEmpty()) {
@@ -83,10 +86,11 @@ fun HomeScreen(
         }
     }
 
-    // загружаем избранное каждый раз, когда выбран таб Home
+    // загружаем избранное и корзину каждый раз, когда выбран таб Home
     LaunchedEffect(selected) {
         if (selected == 0) {
             favouriteViewModel.loadFavourites(context)
+            cartViewModel.loadCart(context)
         }
     }
 
@@ -114,7 +118,6 @@ fun HomeScreen(
             ) {
                 when (selected) {
                     0 -> {
-                        // простая индикация загрузки каталога
                         if (categoriesState.isEmpty() && uiProductsState.isEmpty()) {
                             Box(
                                 modifier = Modifier.fillMaxSize(),
@@ -153,9 +156,11 @@ fun HomeScreen(
                                             )
                                         },
                                         favouriteIds = favouriteIds,
+                                        cartProductIds = cartProductIds,
                                         onAddClick = { product ->
                                             cartViewModel.addToCart(context, product)
-                                        }
+                                        },
+                                        onOpenCart = onCartClick
                                     )
                                 }
 
@@ -167,7 +172,8 @@ fun HomeScreen(
                     }
                     1 -> FavoriteScreen(
                         onBackClick = { selected = 0 },
-                        onProductClick = onProductClick
+                        onProductClick = onProductClick,
+                        onCartClick = onCartClick
                     )
                     2 -> CenterText("Уведомления")
                     3 -> ProfileScreen()
@@ -373,7 +379,7 @@ private fun CategorySection(
         )
 
         LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp)
         ) {
             items(categories) { category ->
                 CategoryChip(
@@ -419,7 +425,9 @@ private fun ProductsSection(
     onProductClick: (Products) -> Unit,
     onFavoriteClick: (Products) -> Unit,
     favouriteIds: Set<String>,
-    onAddClick: (Products) -> Unit
+    cartProductIds: Set<String>,
+    onAddClick: (Products) -> Unit,
+    onOpenCart: () -> Unit
 ) {
     Column {
         Row(
@@ -446,18 +454,22 @@ private fun ProductsSection(
         ) {
             items(products) { product ->
                 val isFav = favouriteIds.contains(product.id)
+                val inCart = cartProductIds.contains(product.id)
 
                 Box(
                     modifier = Modifier
                         .width(160.dp)   // фиксированная ширина
-                        .height(270.dp)  // фиксированная высота (подбери под дизайн)
+                        .height(270.dp)  // фиксированная высота (под дизайн)
                 ) {
                     ProductCard(
                         product = product,
                         isFavorite = isFav,
                         onProductClick = { onProductClick(product) },
                         onFavoriteClick = { onFavoriteClick(product) },
-                        onAddClick = { onAddClick(product) }
+                        onAddClick = {
+                            if (inCart) onOpenCart() else onAddClick(product)
+                        },
+                        inCart = inCart
                     )
                 }
             }

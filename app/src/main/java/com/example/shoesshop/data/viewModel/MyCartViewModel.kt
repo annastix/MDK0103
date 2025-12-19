@@ -1,4 +1,3 @@
-// data/viewModel/CartViewModel.kt
 package com.example.shoesshop.data.viewModel
 
 import android.content.Context
@@ -30,6 +29,10 @@ class CartViewModel : ViewModel() {
 
     private val _uiState = MutableStateFlow(CartScreenUiState())
     val uiState: StateFlow<CartScreenUiState> = _uiState
+
+    // список productId, которые уже в корзине
+    private val _productIdsInCart = MutableStateFlow<Set<String>>(emptySet())
+    val productIdsInCart: StateFlow<Set<String>> = _productIdsInCart
 
     fun loadCart(context: Context) {
         val userId = getSavedUserId(context)
@@ -64,6 +67,7 @@ class CartViewModel : ViewModel() {
                     errorMessage = null,
                     items = mapped
                 )
+                _productIdsInCart.value = list.mapNotNull { it.productId }.toSet()
             }.onFailure { e ->
                 Log.e("CartViewModel", "loadCart error", e)
                 _uiState.value = CartScreenUiState(
@@ -118,9 +122,13 @@ class CartViewModel : ViewModel() {
     // ------- удаление позиции -------
 
     fun remove(cartId: String) {
+        val removed = _uiState.value.items.find { it.cartId == cartId }
         _uiState.value = _uiState.value.copy(
             items = _uiState.value.items.filterNot { it.cartId == cartId }
         )
+        if (removed != null) {
+            _productIdsInCart.value = _productIdsInCart.value - removed.cartId
+        }
 
         viewModelScope.launch {
             runCatching {
@@ -131,6 +139,33 @@ class CartViewModel : ViewModel() {
                 )
             }.onFailure { e ->
                 Log.e("CartViewModel", "deleteCartItem error", e)
+            }
+        }
+    }
+
+    // ------- добавление товара в корзину -------
+
+    fun addToCart(context: Context, product: Products) {
+        val userId = getSavedUserId(context) ?: return
+
+        // если уже в корзине – просто ничего не делаем (UI сам откроет корзину)
+        if (_productIdsInCart.value.contains(product.id)) return
+
+        viewModelScope.launch {
+            runCatching {
+                cartApi.addCartItem(
+                    auth = "Bearer $API_KEY",
+                    apiKey = API_KEY,
+                    body = CartInsertRequest(
+                        userId = userId,
+                        productId = product.id,
+                        count = 1
+                    )
+                )
+            }.onSuccess {
+                _productIdsInCart.value = _productIdsInCart.value + product.id
+            }.onFailure { e ->
+                Log.e("CartViewModel", "addToCart error", e)
             }
         }
     }
@@ -157,26 +192,6 @@ class CartViewModel : ViewModel() {
         } catch (e: Exception) {
             context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
                 .getString("user_id", null)
-        }
-    }
-
-    fun addToCart(context: Context, product: Products) {
-        val userId = getSavedUserId(context) ?: return
-
-        viewModelScope.launch {
-            runCatching {
-                cartApi.addCartItem(
-                    auth = "Bearer $API_KEY",
-                    apiKey = API_KEY,
-                    body = CartInsertRequest(
-                        userId = userId,
-                        productId = product.id,
-                        count = 1
-                    )
-                )
-            }.onFailure { e ->
-                Log.e("CartViewModel", "addToCart error", e)
-            }
         }
     }
 }

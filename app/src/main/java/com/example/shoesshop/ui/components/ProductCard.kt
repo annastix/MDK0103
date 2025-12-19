@@ -31,7 +31,8 @@ fun ProductCard(
     isFavorite: Boolean,
     onProductClick: () -> Unit,
     onFavoriteClick: () -> Unit,
-    onAddClick: () -> Unit
+    onAddClick: () -> Unit,
+    inCart: Boolean = false
 ) {
     Card(
         modifier = Modifier
@@ -144,8 +145,10 @@ fun ProductCard(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        painter = painterResource(R.drawable.add),
-                        contentDescription = "Добавить",
+                        painter = painterResource(
+                            if (inCart) R.drawable.cart else R.drawable.add
+                        ),
+                        contentDescription = if (inCart) "Go to cart" else "Add to cart",
                         tint = Color.White
                     )
                 }
