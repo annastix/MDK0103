@@ -68,7 +68,7 @@ fun CatalogScreen(
                         Icon(
                             painter = painterResource(id = R.drawable.back),
                             contentDescription = "Back",
-                            tint = colorResource(R.color.Text),            // если нужно
+                            tint = colorResource(R.color.Text),
                             modifier = Modifier.size(20.dp) // сама стрелка поменьше
                         )
                     }

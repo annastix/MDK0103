@@ -3,6 +3,7 @@ package com.example.shoesshop.data
 import com.example.shoesshop.data.service.API_KEY
 import com.example.shoesshop.data.service.DatabaseProduct
 import com.example.shoesshop.data.service.DatabaseService
+import com.example.shoesshop.data.service.FavouriteService
 import com.example.shoesshop.data.service.ProfileService
 import com.example.shoesshop.data.service.UserManagementService
 import okhttp3.OkHttpClient
@@ -76,4 +77,7 @@ object RetrofitInstance {
 
     val profileService: ProfileService =
         retrofitRest.create(ProfileService::class.java)
+
+    val favouriteService: FavouriteService =
+        retrofitRest.create(FavouriteService::class.java)
 }

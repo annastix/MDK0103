@@ -81,7 +81,7 @@ fun ProductCard(
                         .padding(8.dp)
                 ) {
                     Icon(
-                        imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                        painter = painterResource(id = if (isFavorite) R.drawable.favorite_fill else R.drawable.favorite),
                         contentDescription = "Избранное",
                         tint = if (isFavorite) Color.Red else Color.Black
                     )

@@ -1,5 +1,6 @@
 package com.example.shoesshop.data.view
 
+import android.app.Application
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -12,33 +13,37 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.shoesshop.R
 import com.example.shoesshop.data.models.Categories
 import com.example.shoesshop.data.models.Products
+import com.example.shoesshop.data.viewModel.FavouriteViewModel
 import com.example.shoesshop.data.viewModel.HomeViewModel
 import com.example.shoesshop.ui.components.ProductCard
 import com.example.shoesshop.ui.theme.AppTypography
 import com.example.shoesshop.ui.theme.Typography
-import android.app.Application
-import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,14 +57,16 @@ fun HomeScreen(
         factory = HomeViewModelFactory(
             LocalContext.current.applicationContext as Application
         )
-    )
-
+    ),
+    favouriteViewModel: FavouriteViewModel = viewModel()
 ) {
     var selected by rememberSaveable { mutableIntStateOf(0) }
 
     val categoriesState by viewModel.categories
     val uiProductsState by viewModel.uiProducts
     var selectedCategoryId by remember { mutableStateOf<String?>(null) }
+
+    val context = LocalContext.current
 
     // по умолчанию выбираем первую категорию
     LaunchedEffect(categoriesState) {
@@ -106,7 +113,13 @@ fun HomeScreen(
                                 ProductsSection(
                                     products = uiProductsState,
                                     onProductClick = onProductClick,
-                                    onFavoriteClick = { /* TODO */ }
+                                    onFavoriteClick = { product ->
+                                        favouriteViewModel.toggleFavourite(
+                                            context = context,
+                                            product = product,
+                                            currentlyFavourite = false // на главной считаем, что товар ещё не в избранном
+                                        )
+                                    }
                                 )
                             }
 
@@ -115,7 +128,10 @@ fun HomeScreen(
                             }
                         }
                     }
-                    1 -> CenterText("Избранное")
+                    1 -> FavoriteScreen(
+                        onBackClick = { selected = 0 },          // вернуться на Home
+                        onProductClick = onProductClick          // пробрасываем тот же обработчик
+                    )
                     2 -> CenterText("Уведомления")
                     3 -> ProfileScreen()
                 }
@@ -432,7 +448,6 @@ class HomeViewModelFactory(
         throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
-
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
