@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
@@ -23,13 +24,17 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.shoesshop.R
 import com.example.shoesshop.data.ProductImages
 import com.example.shoesshop.data.models.ProductDto
+import com.example.shoesshop.data.models.Products
+import com.example.shoesshop.data.service.CategoryNames
 import com.example.shoesshop.data.viewModel.DetailsUiState
 import com.example.shoesshop.data.viewModel.DetailsViewModel
 import com.example.shoesshop.data.viewModel.DetailsViewModelFactory
+import com.example.shoesshop.data.viewModel.FavouriteViewModel
 import com.example.shoesshop.ui.theme.AppTypography
 import com.example.shoesshop.ui.theme.Typography
 
@@ -40,9 +45,15 @@ fun DetailsScreen(
     onBackClick: () -> Unit,
     viewModel: DetailsViewModel = viewModel(
         factory = DetailsViewModelFactory(productId)
-    )
+    ),
+    favouriteViewModel: FavouriteViewModel = viewModel()
 ) {
     val state = viewModel.state
+    val context = LocalContext.current
+
+    val favouriteUiState by favouriteViewModel.uiState.collectAsStateWithLifecycle()
+    val favouriteIds = favouriteUiState.products.map { it.id }.toSet()
+
 
     var showErrorDialog by remember { mutableStateOf(false) }
     var errorText by remember { mutableStateOf("") }
@@ -63,6 +74,12 @@ fun DetailsScreen(
             title = { Text("Ошибка") },
             text = { Text(errorText) }
         )
+    }
+
+    // флаг избранного: при первом запуске и при обновлении favouriteIds ставится по БД
+    var isFavourite by remember { mutableStateOf(false) }
+    LaunchedEffect(favouriteIds, productId) {
+        isFavourite = favouriteIds.contains(productId)
     }
 
     Scaffold(
@@ -96,7 +113,31 @@ fun DetailsScreen(
                 )
             )
         },
-        bottomBar = { DetailsBottomBar() },
+        bottomBar = {
+            DetailsBottomBar(
+                isFavourite = isFavourite,
+                onFavouriteClick = {
+                    val current = (state as? DetailsUiState.Success)?.product ?: return@DetailsBottomBar
+
+                    val p = Products(
+                        id = current.id,
+                        name = current.title,
+                        price = "₽${current.cost}",
+                        originalPrice = "",
+                        category = "",
+                        imageUrl = "",
+                        imageResId = ProductImages.forId(current.id)
+                    )
+
+                    favouriteViewModel.toggleFavourite(
+                        context = context,
+                        product = p,
+                        currentlyFavourite = isFavourite
+                    )
+                    isFavourite = !isFavourite
+                }
+            )
+        },
         containerColor = colorResource(R.color.Background)
     ) { padding ->
         when (state) {
@@ -140,6 +181,8 @@ private fun DetailsContent(
     var expanded by remember { mutableStateOf(false) }
     var selectedIndex by remember { mutableStateOf(0) }
 
+    val categoryName = CategoryNames.nameFor(product.categoryId)
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -150,7 +193,7 @@ private fun DetailsContent(
             style = Typography.headlineMedium
         )
         Text(
-            text = "Men's Shoes",
+            text = categoryName,
             style = Typography.bodyMedium,
             color = colorResource(R.color.Hint)
         )
@@ -182,10 +225,9 @@ private fun DetailsContent(
                 contentDescription = product.title,
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
-                    .width(400.dp)   // было 261.dp
-                    .height(300.dp)  // было 125.dp
+                    .width(400.dp)
+                    .height(300.dp)
             )
-
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -244,7 +286,10 @@ private fun DetailsContent(
 }
 
 @Composable
-private fun DetailsBottomBar() {
+private fun DetailsBottomBar(
+    isFavourite: Boolean,
+    onFavouriteClick: () -> Unit
+) {
     Surface(
         tonalElevation = 8.dp,
         color = colorResource(R.color.Background)
@@ -261,13 +306,16 @@ private fun DetailsBottomBar() {
                 modifier = Modifier
                     .size(52.dp)
                     .clip(CircleShape)
-                    .background(colorResource(R.color.SubTextLight)),
+                    .background(colorResource(R.color.SubTextLight))
+                    .clickable { onFavouriteClick() },
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.favorite),
+                    painter = painterResource(
+                        id = if (isFavourite) R.drawable.favorite_fill else R.drawable.favorite
+                    ),
                     contentDescription = "Favorite",
-                    tint = colorResource(R.color.Text)
+                    tint = if (isFavourite) Color.Red else colorResource(R.color.Text)
                 )
             }
 
@@ -359,7 +407,12 @@ private fun DetailsScreenPreview() {
                 )
             )
         },
-        bottomBar = { DetailsBottomBar() }
+        bottomBar = {
+            DetailsBottomBar(
+                isFavourite = true,
+                onFavouriteClick = {}
+            )
+        }
     ) { padding ->
         DetailsContent(
             product = mockProduct,

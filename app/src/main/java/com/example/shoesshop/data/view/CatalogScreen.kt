@@ -8,24 +8,27 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.shoesshop.R
 import com.example.shoesshop.data.models.Categories
 import com.example.shoesshop.data.models.Products
 import com.example.shoesshop.data.viewModel.CatalogViewModel
 import com.example.shoesshop.data.viewModel.CatalogViewModelFactory
+import com.example.shoesshop.data.viewModel.FavouriteViewModel
 import com.example.shoesshop.ui.components.ProductCard
 import com.example.shoesshop.ui.theme.Typography
 
@@ -38,23 +41,49 @@ fun CatalogScreen(
     onProductClick: (Products) -> Unit,
     viewModel: CatalogViewModel = viewModel(
         factory = CatalogViewModelFactory(categoryId)
-    )
+    ),
+    favouriteViewModel: FavouriteViewModel = viewModel()
 ) {
     val products by viewModel.products
     val categories by viewModel.categories
     val selectedCategoryId by viewModel.selectedCategoryId
     val selectedCategoryName by viewModel.selectedCategoryName
 
+    val context = LocalContext.current
+    val favouriteUiState by favouriteViewModel.uiState.collectAsStateWithLifecycle()
+    val favouriteIds = favouriteUiState.products.map { it.id }.toSet()
+
+    // при каждом открытии экрана и при смене категории — обновляем товары
+    LaunchedEffect(categoryId) {
+        viewModel.onCategorySelected(
+            Categories(
+                id = categoryId,
+                name = categoryName,
+                isSelected = true
+            )
+        )
+    }
+
+    // при каждом открытии каталога обновляем избранное
+    LaunchedEffect(Unit) {
+        favouriteViewModel.loadFavourites(context)
+    }
+
     Scaffold(
         containerColor = colorResource(R.color.Background),
         topBar = {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = colorResource(R.color.Background)   // цвет шапки
+                    containerColor = colorResource(R.color.Background)
                 ),
-                modifier = Modifier
-                    .padding(start = 21.dp),
-                title = { Text( text = selectedCategoryName ?: categoryName,modifier= Modifier.width(291.dp),textAlign = TextAlign.Center) },
+                modifier = Modifier.padding(start = 21.dp),
+                title = {
+                    Text(
+                        text = selectedCategoryName ?: categoryName,
+                        modifier = Modifier.width(291.dp),
+                        textAlign = TextAlign.Center
+                    )
+                },
                 navigationIcon = {
                     IconButton(
                         onClick = onBackClick,
@@ -69,7 +98,7 @@ fun CatalogScreen(
                             painter = painterResource(id = R.drawable.back),
                             contentDescription = "Back",
                             tint = colorResource(R.color.Text),
-                            modifier = Modifier.size(20.dp) // сама стрелка поменьше
+                            modifier = Modifier.size(20.dp)
                         )
                     }
                 }
@@ -99,10 +128,18 @@ fun CatalogScreen(
                     .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
                 items(products) { product ->
+                    val isFav = favouriteIds.contains(product.id)
                     ProductCard(
                         product = product,
+                        isFavorite = isFav,
                         onProductClick = { onProductClick(product) },
-                        onFavoriteClick = { /* TODO */ }
+                        onFavoriteClick = {
+                            favouriteViewModel.toggleFavourite(
+                                context = context,
+                                product = product,
+                                currentlyFavourite = isFav
+                            )
+                        }
                     )
                 }
             }
@@ -144,5 +181,5 @@ private fun CategoryBar(
 @Preview
 @Composable
 private fun CatalogScreenPreview() {
-    CatalogScreen("fdsd","{}",{},{})
+    CatalogScreen("fdsd", "{}", {}, {})
 }

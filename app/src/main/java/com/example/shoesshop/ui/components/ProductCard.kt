@@ -27,11 +27,10 @@ import com.example.shoesshop.R
 @Composable
 fun ProductCard(
     product: Products,
+    isFavorite: Boolean,
     onProductClick: () -> Unit,
     onFavoriteClick: () -> Unit
 ) {
-    var isFavorite by remember { mutableStateOf(false) }
-
     Card(
         modifier = Modifier
             .width(160.dp)
@@ -43,26 +42,22 @@ fun ProductCard(
         )
     ) {
         Column {
-            // Верхняя часть с изображением и кнопкой избранного
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(140.dp)
             ) {
-                // Изображение товара
-                if (product.imageResId != null) {
+                if (product.imageResId != 0) {
                     Image(
                         painter = painterResource(id = product.imageResId),
                         contentDescription = product.name,
                         contentScale = ContentScale.Fit,
                         modifier = Modifier
                             .align(Alignment.BottomCenter)
-                            .fillMaxWidth(1f)   // было 0.95f
-                            .aspectRatio(1.8f)  // было 2.1f
+                            .fillMaxWidth(1f)
+                            .aspectRatio(1.8f)
                     )
-
                 } else {
-                    // Запасной вариант, если нет изображения
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -70,25 +65,25 @@ fun ProductCard(
                     )
                 }
 
-                // Кнопка избранного поверх изображения
                 IconButton(
-                    onClick = {
-                        isFavorite = !isFavorite
-                        onFavoriteClick()
-                    },
+                    onClick = onFavoriteClick,
                     modifier = Modifier
                         .align(Alignment.TopStart)
                         .padding(8.dp)
                 ) {
                     Icon(
-                        painter = painterResource(id = if (isFavorite) R.drawable.favorite_fill else R.drawable.favorite),
+                        painter = painterResource(
+                            id = if (isFavorite)
+                                R.drawable.favorite_fill
+                            else
+                                R.drawable.favorite
+                        ),
                         contentDescription = "Избранное",
                         tint = if (isFavorite) Color.Red else Color.Black
                     )
                 }
             }
 
-            // Нижняя часть с информацией о товаре
             Column(
                 modifier = Modifier
                     .padding(12.dp)
@@ -122,11 +117,12 @@ fun ProductCard(
     }
 }
 
+
 @Preview
 @Composable
 fun ProductCardPreview() {
     ProductCard(
-        product = com.example.shoesshop.data.models.Products(
+        product = Products(
             id = "1",
             name = "Nike Air Max",
             price = "P752.00",
@@ -135,6 +131,7 @@ fun ProductCardPreview() {
             imageUrl = "",
             imageResId = R.drawable.nike_zoom_winflo_3_831561_001_mens_running_shoes_11550187236tiyyje6l87_prev_ui_3
         ),
+        isFavorite = true,
         onProductClick = {},
         onFavoriteClick = {}
     )

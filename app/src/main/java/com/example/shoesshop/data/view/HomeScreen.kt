@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.shoesshop.R
 import com.example.shoesshop.data.models.Categories
 import com.example.shoesshop.data.models.Products
@@ -68,10 +69,21 @@ fun HomeScreen(
 
     val context = LocalContext.current
 
+    // состояние избранного
+    val favouriteUiState by favouriteViewModel.uiState.collectAsStateWithLifecycle()
+    val favouriteIds = favouriteUiState.products.map { it.id }.toSet()
+
     // по умолчанию выбираем первую категорию
     LaunchedEffect(categoriesState) {
         if (selectedCategoryId == null && categoriesState.isNotEmpty()) {
             selectedCategoryId = categoriesState.first().id
+        }
+    }
+
+    // загружаем избранное каждый раз, когда выбран таб Home
+    LaunchedEffect(selected) {
+        if (selected == 0) {
+            favouriteViewModel.loadFavourites(context)
         }
     }
 
@@ -114,12 +126,14 @@ fun HomeScreen(
                                     products = uiProductsState,
                                     onProductClick = onProductClick,
                                     onFavoriteClick = { product ->
+                                        val currentlyFavourite = favouriteIds.contains(product.id)
                                         favouriteViewModel.toggleFavourite(
                                             context = context,
                                             product = product,
-                                            currentlyFavourite = false // на главной считаем, что товар ещё не в избранном
+                                            currentlyFavourite = currentlyFavourite
                                         )
-                                    }
+                                    },
+                                    favouriteIds = favouriteIds
                                 )
                             }
 
@@ -129,8 +143,8 @@ fun HomeScreen(
                         }
                     }
                     1 -> FavoriteScreen(
-                        onBackClick = { selected = 0 },          // вернуться на Home
-                        onProductClick = onProductClick          // пробрасываем тот же обработчик
+                        onBackClick = { selected = 0 },
+                        onProductClick = onProductClick
                     )
                     2 -> CenterText("Уведомления")
                     3 -> ProfileScreen()
@@ -139,6 +153,7 @@ fun HomeScreen(
         }
     }
 }
+
 
 @Composable
 private fun TopBar(onSettingsClick: () -> Unit) {
@@ -361,7 +376,8 @@ fun CategoryChip(
 private fun ProductsSection(
     products: List<Products>,
     onProductClick: (Products) -> Unit,
-    onFavoriteClick: (Products) -> Unit
+    onFavoriteClick: (Products) -> Unit,
+    favouriteIds: Set<String>
 ) {
     Column {
         Row(
@@ -385,8 +401,10 @@ private fun ProductsSection(
 
         LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             items(products) { product ->
+                val isFav = favouriteIds.contains(product.id)
                 ProductCard(
                     product = product,
+                    isFavorite = isFav,
                     onProductClick = { onProductClick(product) },
                     onFavoriteClick = { onFavoriteClick(product) }
                 )

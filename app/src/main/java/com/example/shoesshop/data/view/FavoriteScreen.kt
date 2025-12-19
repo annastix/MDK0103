@@ -126,7 +126,8 @@ fun FavoriteScreen(
                                     product = product,
                                     currentlyFavourite = true
                                 )
-                            }
+                            },
+                            isFavorite = true
                         )
                     }
                 }

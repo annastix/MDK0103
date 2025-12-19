@@ -1,5 +1,7 @@
 package com.example.shoesshop.navigation
+
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -16,6 +18,7 @@ import com.example.shoesshop.data.view.RegisterAccount
 import com.example.shoesshop.data.view.ResetPasswordOTPScreen
 import com.example.shoesshop.data.view.SignInScreen
 import com.example.shoesshop.data.view.VerificationScreen
+import com.example.shoesshop.data.viewModel.FavouriteViewModel
 import com.example.shoesshop.data.viewModel.RegisterAccountViewModel
 
 @Composable
@@ -23,6 +26,11 @@ fun NavigationApp(
     navController: NavHostController
 ) {
     val registerAccountViewModel: RegisterAccountViewModel = viewModel()
+    val favouriteViewModel: FavouriteViewModel = viewModel()
+
+    // если нужно, можно подписаться на избранное тут
+    val favouriteUiState = favouriteViewModel.uiState.collectAsStateWithLifecycle()
+    val favouriteIds = favouriteUiState.value.products.map { it.id }.toSet()
 
     NavHost(
         navController = navController,
@@ -32,27 +40,27 @@ fun NavigationApp(
             RegisterAccount(
                 viewModel = registerAccountViewModel,
                 onBackClick = { navController.popBackStack() },
-                onNavigateToSignIn = {  navController.navigate("sign_in") },
-                onSendOTP = {  navController.navigate("send_otp") },
+                onNavigateToSignIn = { navController.navigate("sign_in") },
+                onSendOTP = { navController.navigate("send_otp") },
             )
         }
         composable("sign_in") {
             SignInScreen(
-                onRegisterClick =  {  navController.navigate("register_account") },
+                onRegisterClick = { navController.navigate("register_account") },
                 onBackClick = { navController.popBackStack() },
-                onSignInClick = {  navController.navigate("home") },
-                resetPassword = {  navController.navigate("forgot_passwd") }
+                onSignInClick = { navController.navigate("home") },
+                resetPassword = { navController.navigate("forgot_passwd") }
             )
         }
         composable("send_otp") {
             VerificationScreen(
                 onBackClick = { navController.popBackStack() },
-                onVerificationSuccess = {  navController.navigate("home") }
+                onVerificationSuccess = { navController.navigate("home") }
             )
         }
         composable("onboard") {
             OnboardingScreen(
-                onFinish ={  navController.navigate("register_account") }
+                onFinish = { navController.navigate("register_account") }
             )
         }
         composable("home") {
@@ -60,11 +68,13 @@ fun NavigationApp(
                 onProductClick = { product ->
                     navController.navigate("details/${product.id}")
                 },
-                {},
-                {},
-                onCategoryClick =  { id, title ->
+                onCartClick = {},
+                onSearchClick = {},
+                onSettingsClick = {},
+                onCategoryClick = { id, title ->
                     navController.navigate("catalog/$id/$title")
-                }
+                },
+                favouriteViewModel = favouriteViewModel
             )
         }
 
@@ -86,6 +96,7 @@ fun NavigationApp(
                 onPasswordChanged = { navController.navigate("sign_in") }
             )
         }
+
         composable(
             route = "catalog/{categoryId}/{categoryName}"
         ) { backStackEntry ->
@@ -98,10 +109,10 @@ fun NavigationApp(
                 onBackClick = { navController.popBackStack() },
                 onProductClick = { product ->
                     navController.navigate("details/${product.id}")
-                }
+                },
+                favouriteViewModel = favouriteViewModel
             )
         }
-
 
         composable(
             route = "details/{productId}",
@@ -112,7 +123,8 @@ fun NavigationApp(
             val id = backStackEntry.arguments?.getString("productId")!!
             DetailsScreen(
                 productId = id,
-                onBackClick = { navController.popBackStack() }
+                onBackClick = { navController.popBackStack() },
+                favouriteViewModel = favouriteViewModel
             )
         }
     }
