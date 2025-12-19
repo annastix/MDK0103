@@ -88,4 +88,16 @@ object PreferenceHelper {
 
     fun getLoginTime(context: Context): Long =
         prefs(context).getLong(KEY_LOGIN_TIME, 0L)
+
+    // PreferenceHelper.kt
+
+    private const val KEY_ONBOARD_SHOWN = "onboard_shown"
+
+    fun isOnboardingShown(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_ONBOARD_SHOWN, false)
+
+    fun setOnboardingShown(context: Context) {
+        prefs(context).edit().putBoolean(KEY_ONBOARD_SHOWN, true).apply()
+    }
+
 }

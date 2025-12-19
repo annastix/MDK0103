@@ -286,7 +286,7 @@ fun CheckoutScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            painter = painterResource(id = R.drawable.cart),
+                            painter = painterResource(id = R.drawable.card),
                             contentDescription = null,
                             tint = colorResource(R.color.Text)
                         )

@@ -1,6 +1,7 @@
 package com.example.shoesshop.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -9,6 +10,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.shoesshop.data.PreferenceHelper
 import com.example.shoesshop.data.view.CatalogScreen
 import com.example.shoesshop.data.view.CheckoutScreen
 import com.example.shoesshop.data.view.CreateNewPasswordScreen
@@ -29,6 +31,17 @@ import com.example.shoesshop.data.viewModel.RegisterAccountViewModel
 fun NavigationApp(
     navController: NavHostController
 ) {
+    val context = LocalContext.current
+
+    // определяем стартовый экран один раз
+    val startDestination = remember {
+        if (PreferenceHelper.isOnboardingShown(context)) {
+            "sign_in"
+        } else {
+            "onboard"
+        }
+    }
+
     val registerAccountViewModel: RegisterAccountViewModel = viewModel()
     val favouriteViewModel: FavouriteViewModel = viewModel()
     val cartViewModel: CartViewModel = viewModel()
@@ -38,8 +51,21 @@ fun NavigationApp(
 
     NavHost(
         navController = navController,
-        startDestination = "onboard"
+        startDestination = startDestination
     ) {
+        composable("onboard") {
+            OnboardingScreen(
+                onFinish = {
+                    // запоминаем, что онбординг уже показали
+                    PreferenceHelper.setOnboardingShown(context)
+                    // переходим на логин и убираем онбординг из backstack
+                    navController.navigate("register_account") {
+                        popUpTo("onboard") { inclusive = true }
+                    }
+                }
+            )
+        }
+
         composable("register_account") {
             RegisterAccount(
                 viewModel = registerAccountViewModel,
@@ -62,18 +88,13 @@ fun NavigationApp(
                 onVerificationSuccess = { navController.navigate("home") }
             )
         }
-        composable("onboard") {
-            OnboardingScreen(
-                onFinish = { navController.navigate("register_account") }
-            )
-        }
         composable("home") {
             HomeScreen(
                 onProductClick = { product ->
                     navController.navigate("details/${product.id}")
                 },
                 onCartClick = {
-                    navController.navigate("my_cart")   // ← переход в корзину
+                    navController.navigate("my_cart")
                 },
                 onSearchClick = {},
                 onSettingsClick = {},
@@ -86,7 +107,8 @@ fun NavigationApp(
 
         composable("forgot_passwd") {
             ForgotPasswordScreen(
-                onEmailSaved = { navController.navigate("reset_otp") }
+                onEmailSaved = { navController.navigate("reset_otp") },
+                onBackClick = { navController.navigate("register_account") }
             )
         }
 

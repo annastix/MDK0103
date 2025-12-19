@@ -180,8 +180,7 @@ fun HomeScreen(
                         val userId = cartViewModel.getSavedUserId(context) ?: ""
 
                         OrdersScreen(
-                            userId = userId,
-                            onBackClick = { selected = 0 }
+                            userId = userId
                         )
                     }
                     3 -> ProfileScreen()

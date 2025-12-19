@@ -51,7 +51,6 @@ import java.time.temporal.ChronoUnit
 @Composable
 fun OrdersScreen(
     userId: String,
-    onBackClick: () -> Unit,
     ordersViewModel: OrdersViewModel = viewModel()
 ) {
     val uiState by ordersViewModel.uiState.collectAsState()
