@@ -1,4 +1,4 @@
-package com.example.shoesshop.data.view
+package com.example.shoesshop.ui.view
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -11,7 +11,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -21,13 +20,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.shoesshop.R
-import com.example.shoesshop.data.viewModel.CartViewModel
-import com.example.shoesshop.data.viewModel.CheckoutViewModel
+import com.example.shoesshop.ui.viewModel.CartViewModel
+import com.example.shoesshop.ui.viewModel.CheckoutViewModel
 import com.example.shoesshop.ui.components.OrderSuccessDialog
 import com.example.shoesshop.ui.theme.Typography
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,7 +39,7 @@ fun CheckoutScreen(
     deliveryPrice: Double,
     cartViewModel: CartViewModel,
     checkoutViewModel: CheckoutViewModel = viewModel(
-        factory = object : androidx.lifecycle.ViewModelProvider.Factory {
+        factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 return CheckoutViewModel(cartViewModel) as T

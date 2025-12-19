@@ -1,4 +1,4 @@
-package com.example.shoesshop.data.view
+package com.example.shoesshop.ui.view
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -31,10 +31,10 @@ import com.example.shoesshop.data.ProductImages
 import com.example.shoesshop.data.models.ProductDto
 import com.example.shoesshop.data.models.Products
 import com.example.shoesshop.data.service.CategoryNames
-import com.example.shoesshop.data.viewModel.DetailsUiState
-import com.example.shoesshop.data.viewModel.DetailsViewModel
-import com.example.shoesshop.data.viewModel.DetailsViewModelFactory
-import com.example.shoesshop.data.viewModel.FavouriteViewModel
+import com.example.shoesshop.ui.viewModel.DetailsUiState
+import com.example.shoesshop.ui.viewModel.DetailsViewModel
+import com.example.shoesshop.ui.viewModel.DetailsViewModelFactory
+import com.example.shoesshop.ui.viewModel.FavouriteViewModel
 import com.example.shoesshop.ui.theme.AppTypography
 import com.example.shoesshop.ui.theme.Typography
 

@@ -1,4 +1,4 @@
-package com.example.shoesshop.data.viewModel
+package com.example.shoesshop.ui.viewModel
 
 import android.annotation.SuppressLint
 import android.app.Application

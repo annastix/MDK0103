@@ -1,10 +1,12 @@
-package com.example.shoesshop.data.view
+package com.example.shoesshop.ui.view
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -12,43 +14,64 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.shoesshop.R
+import com.example.shoesshop.data.models.Categories
 import com.example.shoesshop.data.models.Products
-import com.example.shoesshop.data.viewModel.CartViewModel
-import com.example.shoesshop.data.viewModel.FavouriteUiState
-import com.example.shoesshop.data.viewModel.FavouriteViewModel
+import com.example.shoesshop.ui.viewModel.CatalogViewModel
+import com.example.shoesshop.ui.viewModel.CatalogViewModelFactory
+import com.example.shoesshop.ui.viewModel.CartViewModel
+import com.example.shoesshop.ui.viewModel.FavouriteViewModel
 import com.example.shoesshop.ui.components.ProductCard
 import com.example.shoesshop.ui.theme.Typography
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FavoriteScreen(
+fun CatalogScreen(
+    categoryId: String,
+    categoryName: String,
     onBackClick: () -> Unit,
     onProductClick: (Products) -> Unit,
-    viewModel: FavouriteViewModel = viewModel(),
-    cartViewModel: CartViewModel = viewModel(),
-    onCartClick: () -> Unit = {}
+    onCartClick: () -> Unit = {},                         // переход в корзину
+    viewModel: CatalogViewModel = viewModel(
+        factory = CatalogViewModelFactory(categoryId)
+    ),
+    favouriteViewModel: FavouriteViewModel = viewModel(),
+    cartViewModel: CartViewModel = viewModel()
 ) {
-    val uiState: FavouriteUiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val context = LocalContext.current
+    val products by viewModel.products
+    val categories by viewModel.categories
+    val selectedCategoryId by viewModel.selectedCategoryId
+    val selectedCategoryName by viewModel.selectedCategoryName
 
-    // список productId из корзины
+    val context = LocalContext.current
+    val favouriteUiState by favouriteViewModel.uiState.collectAsStateWithLifecycle()
+    val favouriteIds = favouriteUiState.products.map { it.id }.toSet()
+
     val cartProductIds by cartViewModel.productIdsInCart.collectAsStateWithLifecycle()
 
+    // при каждом открытии экрана и при смене категории — обновляем товары
+    LaunchedEffect(categoryId) {
+        viewModel.onCategorySelected(
+            Categories(
+                id = categoryId,
+                name = categoryName,
+                isSelected = true
+            )
+        )
+    }
+
+    // при каждом открытии каталога обновляем избранное и корзину
     LaunchedEffect(Unit) {
-        viewModel.loadFavourites(context)
+        favouriteViewModel.loadFavourites(context)
         cartViewModel.loadCart(context)
     }
 
@@ -62,11 +85,8 @@ fun FavoriteScreen(
                 modifier = Modifier.padding(start = 21.dp),
                 title = {
                     Text(
-                        text = stringResource(R.string.favourite),
+                        text = selectedCategoryName ?: categoryName,
                         modifier = Modifier.width(291.dp),
-                        fontFamily = Typography.titleSmall.fontFamily,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center
                     )
                 },
@@ -97,50 +117,49 @@ fun FavoriteScreen(
                 .background(colorResource(R.color.Background))
                 .fillMaxSize()
         ) {
-            when {
-                uiState.isLoading -> {
+            CategoryBar(
+                categories = categories,
+                selectedCategoryId = selectedCategoryId,
+                onCategorySelected = { viewModel.onCategorySelected(it) }
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                if (products.isEmpty()) {
+                    // индикация загрузки каталога
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        CircularProgressIndicator(color = colorResource(R.color.Accent))
+                        CircularProgressIndicator()
                     }
-                }
-                uiState.products.isEmpty() -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = stringResource(R.string.favourite),
-                            style = Typography.bodySmall,
-                            color = Color.Gray
-                        )
-                    }
-                }
-                else -> {
+                } else {
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(2),
                         verticalArrangement = Arrangement.spacedBy(16.dp),
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                        modifier = Modifier.fillMaxSize()
                     ) {
-                        items(uiState.products) { product ->
+                        items(products) { product ->
+                            val isFav = favouriteIds.contains(product.id)
                             val inCart = cartProductIds.contains(product.id)
 
                             ProductCard(
                                 product = product,
+                                isFavorite = isFav,
                                 onProductClick = { onProductClick(product) },
                                 onFavoriteClick = {
-                                    viewModel.toggleFavourite(
+                                    favouriteViewModel.toggleFavourite(
                                         context = context,
                                         product = product,
-                                        currentlyFavourite = true
+                                        currentlyFavourite = isFav
                                     )
                                 },
-                                isFavorite = true,
                                 onAddClick = {
                                     if (inCart) {
                                         onCartClick()
@@ -158,8 +177,39 @@ fun FavoriteScreen(
     }
 }
 
+@Composable
+private fun CategoryBar(
+    categories: List<Categories>,
+    selectedCategoryId: String?,
+    onCategorySelected: (Categories) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+    ) {
+        Text(
+            text = stringResource(R.string.category),
+            style = Typography.labelMedium,
+            modifier = Modifier.padding(bottom = 12.dp)
+        )
+
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            items(categories) { category ->
+                CategoryChip(
+                    category = category.name,
+                    isSelected = selectedCategoryId == category.id,
+                    onClick = { onCategorySelected(category) },
+                )
+            }
+        }
+    }
+}
+
 @Preview
 @Composable
-private fun FavoriteScreenPreview() {
-    FavoriteScreen(onBackClick = {}, onProductClick = {})
+private fun CatalogScreenPreview() {
+    CatalogScreen("fdsd", "{}", {}, {})
 }

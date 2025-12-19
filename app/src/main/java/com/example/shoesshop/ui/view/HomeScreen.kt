@@ -1,4 +1,4 @@
-package com.example.shoesshop.data.view
+package com.example.shoesshop.ui.view
 
 import android.app.Application
 import androidx.compose.foundation.Image
@@ -40,9 +40,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.shoesshop.R
 import com.example.shoesshop.data.models.Categories
 import com.example.shoesshop.data.models.Products
-import com.example.shoesshop.data.viewModel.CartViewModel
-import com.example.shoesshop.data.viewModel.FavouriteViewModel
-import com.example.shoesshop.data.viewModel.HomeViewModel
+import com.example.shoesshop.ui.viewModel.CartViewModel
+import com.example.shoesshop.ui.viewModel.FavouriteViewModel
+import com.example.shoesshop.ui.viewModel.HomeViewModel
 import com.example.shoesshop.ui.components.ProductCard
 import com.example.shoesshop.ui.theme.AppTypography
 import com.example.shoesshop.ui.theme.Typography
@@ -385,7 +385,7 @@ private fun CategorySection(
         )
 
         LazyRow(
-            horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             items(categories) { category ->
                 CategoryChip(

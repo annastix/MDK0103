@@ -1,4 +1,4 @@
-package com.example.shoesshop.data.view
+package com.example.shoesshop.ui.view
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween

@@ -1,4 +1,4 @@
-package com.example.shoesshop.data.view
+package com.example.shoesshop.ui.view
 
 import android.Manifest
 import android.net.Uri
@@ -33,8 +33,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.rememberAsyncImagePainter
 import com.example.shoesshop.R
-import com.example.shoesshop.data.viewModel.ProfileUiState
-import com.example.shoesshop.data.viewModel.ProfileViewModel
+import com.example.shoesshop.ui.viewModel.ProfileUiState
+import com.example.shoesshop.ui.viewModel.ProfileViewModel
 import com.example.shoesshop.ui.components.RegisterButton
 import com.example.shoesshop.ui.theme.Typography
 import java.io.File

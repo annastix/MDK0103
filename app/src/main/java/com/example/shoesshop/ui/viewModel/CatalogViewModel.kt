@@ -1,4 +1,4 @@
-package com.example.shoesshop.data.viewModel
+package com.example.shoesshop.ui.viewModel
 
 import android.util.Log
 import androidx.compose.runtime.State
@@ -6,8 +6,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import coil3.util.CoilUtils.result
-import com.example.shoesshop.R
 import com.example.shoesshop.data.ProductImages
 import com.example.shoesshop.data.RetrofitInstance
 import com.example.shoesshop.data.models.Categories

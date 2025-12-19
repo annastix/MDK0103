@@ -11,21 +11,21 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.shoesshop.data.PreferenceHelper
-import com.example.shoesshop.data.view.CatalogScreen
-import com.example.shoesshop.data.view.CheckoutScreen
-import com.example.shoesshop.data.view.CreateNewPasswordScreen
-import com.example.shoesshop.data.view.DetailsScreen
-import com.example.shoesshop.data.view.ForgotPasswordScreen
-import com.example.shoesshop.data.view.HomeScreen
-import com.example.shoesshop.data.view.MyCartScreen
-import com.example.shoesshop.data.view.OnboardingScreen
-import com.example.shoesshop.data.view.RegisterAccount
-import com.example.shoesshop.data.view.ResetPasswordOTPScreen
-import com.example.shoesshop.data.view.SignInScreen
-import com.example.shoesshop.data.view.VerificationScreen
-import com.example.shoesshop.data.viewModel.CartViewModel
-import com.example.shoesshop.data.viewModel.FavouriteViewModel
-import com.example.shoesshop.data.viewModel.RegisterAccountViewModel
+import com.example.shoesshop.ui.view.CatalogScreen
+import com.example.shoesshop.ui.view.CheckoutScreen
+import com.example.shoesshop.ui.view.CreateNewPasswordScreen
+import com.example.shoesshop.ui.view.DetailsScreen
+import com.example.shoesshop.ui.view.ForgotPasswordScreen
+import com.example.shoesshop.ui.view.HomeScreen
+import com.example.shoesshop.ui.view.MyCartScreen
+import com.example.shoesshop.ui.view.OnboardingScreen
+import com.example.shoesshop.ui.view.RegisterAccount
+import com.example.shoesshop.ui.view.ResetPasswordOTPScreen
+import com.example.shoesshop.ui.view.SignInScreen
+import com.example.shoesshop.ui.view.VerificationScreen
+import com.example.shoesshop.ui.viewModel.CartViewModel
+import com.example.shoesshop.ui.viewModel.FavouriteViewModel
+import com.example.shoesshop.ui.viewModel.RegisterAccountViewModel
 
 @Composable
 fun NavigationApp(

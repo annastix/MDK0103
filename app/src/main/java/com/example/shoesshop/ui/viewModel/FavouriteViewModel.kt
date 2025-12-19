@@ -1,5 +1,5 @@
 // data/viewModel/FavouriteViewModel.kt
-package com.example.shoesshop.data.viewModel
+package com.example.shoesshop.ui.viewModel
 
 import android.content.Context
 import android.util.Log

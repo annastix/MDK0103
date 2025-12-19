@@ -1,4 +1,4 @@
-package com.example.shoesshop.data.view
+package com.example.shoesshop.ui.view
 
 import android.util.Log
 import androidx.compose.foundation.background
@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.shoesshop.R
-import com.example.shoesshop.data.viewModel.SignInViewModel
+import com.example.shoesshop.ui.viewModel.SignInViewModel
 import com.example.shoesshop.ui.components.AlertMessage
 import com.example.shoesshop.ui.components.BackButton
 import com.example.shoesshop.ui.components.InputTextBox

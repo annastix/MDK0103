@@ -1,4 +1,4 @@
-package com.example.shoesshop.data.view
+package com.example.shoesshop.ui.view
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -15,8 +15,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.shoesshop.R
 import com.example.shoesshop.data.PreferenceHelper
-import com.example.shoesshop.data.viewModel.ForgotPasswordViewModel
-import com.example.shoesshop.data.viewModel.PasswordRecoveryState
+import com.example.shoesshop.ui.viewModel.ForgotPasswordViewModel
+import com.example.shoesshop.ui.viewModel.PasswordRecoveryState
 import com.example.shoesshop.ui.components.AlertMessage
 import com.example.shoesshop.ui.components.BackButton
 import com.example.shoesshop.ui.components.InputTextBox

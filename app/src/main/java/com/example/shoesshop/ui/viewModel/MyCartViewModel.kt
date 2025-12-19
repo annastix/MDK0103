@@ -1,4 +1,4 @@
-package com.example.shoesshop.data.viewModel
+package com.example.shoesshop.ui.viewModel
 
 import android.content.Context
 import android.util.Log
@@ -12,7 +12,7 @@ import com.example.shoesshop.data.models.Products
 import com.example.shoesshop.data.service.API_KEY
 import com.example.shoesshop.data.service.CartInsertRequest
 import com.example.shoesshop.data.service.CartUpdateRequest
-import com.example.shoesshop.data.view.CartItemUi
+import com.example.shoesshop.ui.view.CartItemUi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
