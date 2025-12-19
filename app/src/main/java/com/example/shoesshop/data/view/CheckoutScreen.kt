@@ -1,5 +1,6 @@
 package com.example.shoesshop.data.view
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -10,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -75,10 +77,13 @@ fun CheckoutScreen(
         topBar = {
             TopAppBar(
                 modifier = Modifier.padding(start = 21.dp),
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = colorResource(R.color.Background)
+                ),
                 title = {
                     Text(
                         text = stringResource(id = R.string.cart),
-                        modifier = Modifier.width(291.dp),
+                        modifier = Modifier.fillMaxWidth(),
                         fontFamily = Typography.titleSmall.fontFamily,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
@@ -256,25 +261,18 @@ fun CheckoutScreen(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(8.dp))
 
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(120.dp)
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(colorResource(R.color.Background)),
-                        contentAlignment = Alignment.Center
+                            .height(160.dp)                 // нужная высота карты
                     ) {
-                        Text(
-                            text = stringResource(R.string.map),
-                            style = Typography.bodySmall,
-                            color = Color.Gray
+                        Image(
+                            painter = painterResource(id = R.drawable.map),
+                            contentDescription = stringResource(R.string.map), // или Fit/FillBounds под макет
+                            modifier = Modifier.fillMaxSize()
                         )
                     }
-
-                    // Способ оплаты
-                    Spacer(modifier = Modifier.height(12.dp))
                     Text(
                         text = stringResource(R.string.payment_method),
                         style = Typography.bodyMedium
@@ -398,16 +396,16 @@ fun CheckoutScreen(
     }
 }
 
-//@Preview(showBackground = true, showSystemUi = true)
-//@Composable
-//fun CheckoutScreenPreview() {
-//    CheckoutScreen(
-//        onBackClick = {},
-//        onBackToHome = {},
-//        userId = null,
-//        paymentId = null,
-//        totalAmount = 753.95,
-//        deliveryPrice = 60.20,
-//        {}
-//    )
-//}
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun CheckoutScreenPreview() {
+    CheckoutScreen(
+        onBackClick = {},
+        onBackToHome = {},
+        userId = null,
+        paymentId = null,
+        totalAmount = 753.95,
+        deliveryPrice = 60.20,
+        cartViewModel = CartViewModel()
+    )
+}

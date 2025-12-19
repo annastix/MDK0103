@@ -58,6 +58,7 @@
     <string name="view_map">Посмотреть на карте</string>
     <string name="recent">Недавний</string>
 
+    <string name="back">Назад</string>
     <string name="yesterday">Вчера</string>
     <string name="more_details">Подробнее</string>
     <string name="added_to_cart">Добавлено</string>

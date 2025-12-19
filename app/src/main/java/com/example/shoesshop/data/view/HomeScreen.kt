@@ -175,7 +175,15 @@ fun HomeScreen(
                         onProductClick = onProductClick,
                         onCartClick = onCartClick
                     )
-                    2 -> CenterText("Уведомления")
+                    2 -> {
+                        val context = LocalContext.current
+                        val userId = cartViewModel.getSavedUserId(context) ?: ""
+
+                        OrdersScreen(
+                            userId = userId,
+                            onBackClick = { selected = 0 }
+                        )
+                    }
                     3 -> ProfileScreen()
                 }
             }
@@ -321,7 +329,7 @@ private fun BottomBar(
                 contentAlignment = Alignment.Center
             ) {
                 FloatingActionButton(
-                    onClick = { onCartClick() },          // ТОЛЬКО корзина
+                    onClick = { onCartClick() },
                     modifier = Modifier.size(56.dp),
                     containerColor = colorResource(R.color.Accent),
                     contentColor = colorResource(R.color.white),
@@ -335,14 +343,13 @@ private fun BottomBar(
                 }
             }
 
-            // справа: уведомления + профиль
             Row {
                 IconButton(onClick = { onSelectedChange(2) }) {
                     Icon(
-                        painter = painterResource(id = R.drawable.notification),
+                        painter = painterResource(id = R.drawable.orders),
                         contentDescription = "Notification",
                         tint = if (selected == 2)
-                            MaterialTheme.colorScheme.primary
+                            colorResource(R.color.Accent)
                         else
                             Color.Black
                     )

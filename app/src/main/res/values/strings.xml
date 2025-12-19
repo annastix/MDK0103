@@ -74,4 +74,5 @@
     <string name="cancel">Cancel</string>
     <string name="ok">OK</string>
     <string name="loyalty_card">Loyalty Card</string>
+    <string name="back">Back</string>
 </resources>
