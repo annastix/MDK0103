@@ -44,7 +44,7 @@
     <string name="arrivals">Акции</string>
     <string name="favourite">Избранное</string>
     <string name="cart">Корзина</string>
-    <string name="items">товара</string>
+    <string name="items"> товара</string>
     <string name="sum">Сумма</string>
     <string name="delivery">Доставка</string>
     <string name="total_cost">Итого</string>
