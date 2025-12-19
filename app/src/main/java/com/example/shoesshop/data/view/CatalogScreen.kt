@@ -12,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -28,6 +29,7 @@ import com.example.shoesshop.data.models.Categories
 import com.example.shoesshop.data.models.Products
 import com.example.shoesshop.data.viewModel.CatalogViewModel
 import com.example.shoesshop.data.viewModel.CatalogViewModelFactory
+import com.example.shoesshop.data.viewModel.CartViewModel
 import com.example.shoesshop.data.viewModel.FavouriteViewModel
 import com.example.shoesshop.ui.components.ProductCard
 import com.example.shoesshop.ui.theme.Typography
@@ -42,7 +44,8 @@ fun CatalogScreen(
     viewModel: CatalogViewModel = viewModel(
         factory = CatalogViewModelFactory(categoryId)
     ),
-    favouriteViewModel: FavouriteViewModel = viewModel()
+    favouriteViewModel: FavouriteViewModel = viewModel(),
+    cartViewModel: CartViewModel = viewModel()
 ) {
     val products by viewModel.products
     val categories by viewModel.categories
@@ -119,29 +122,45 @@ fun CatalogScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
-                items(products) { product ->
-                    val isFav = favouriteIds.contains(product.id)
-                    ProductCard(
-                        product = product,
-                        isFavorite = isFav,
-                        onProductClick = { onProductClick(product) },
-                        onFavoriteClick = {
-                            favouriteViewModel.toggleFavourite(
-                                context = context,
+                if (products.isEmpty()) {
+                    // индикация загрузки каталога
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                } else {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(2),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        items(products) { product ->
+                            val isFav = favouriteIds.contains(product.id)
+                            ProductCard(
                                 product = product,
-                                currentlyFavourite = isFav
+                                isFavorite = isFav,
+                                onProductClick = { onProductClick(product) },
+                                onFavoriteClick = {
+                                    favouriteViewModel.toggleFavourite(
+                                        context = context,
+                                        product = product,
+                                        currentlyFavourite = isFav
+                                    )
+                                },
+                                onAddClick = {
+                                    cartViewModel.addToCart(context, product)
+                                }
                             )
-                        },
-                        onAddClick = {}
-                    )
+                        }
+                    }
                 }
             }
         }
