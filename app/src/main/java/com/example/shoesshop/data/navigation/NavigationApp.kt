@@ -1,13 +1,24 @@
 package com.example.shoesshop.navigation
+
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
+import com.example.shoesshop.data.view.CatalogScreen
+import com.example.shoesshop.data.view.CreateNewPasswordScreen
+import com.example.shoesshop.data.view.DetailsScreen
 import com.example.shoesshop.data.view.ForgotPasswordScreen
+import com.example.shoesshop.data.view.HomeScreen
+import com.example.shoesshop.data.view.OnboardingScreen
 import com.example.shoesshop.data.view.RegisterAccount
+import com.example.shoesshop.data.view.ResetPasswordOTPScreen
 import com.example.shoesshop.data.view.SignInScreen
 import com.example.shoesshop.data.view.VerificationScreen
+import com.example.shoesshop.data.viewModel.FavouriteViewModel
 import com.example.shoesshop.data.viewModel.RegisterAccountViewModel
 
 @Composable
@@ -15,35 +26,106 @@ fun NavigationApp(
     navController: NavHostController
 ) {
     val registerAccountViewModel: RegisterAccountViewModel = viewModel()
+    val favouriteViewModel: FavouriteViewModel = viewModel()
+
+    // если нужно, можно подписаться на избранное тут
+    val favouriteUiState = favouriteViewModel.uiState.collectAsStateWithLifecycle()
+    val favouriteIds = favouriteUiState.value.products.map { it.id }.toSet()
 
     NavHost(
         navController = navController,
-        startDestination = "register_account"
+        startDestination = "onboard"
     ) {
         composable("register_account") {
             RegisterAccount(
                 viewModel = registerAccountViewModel,
                 onBackClick = { navController.popBackStack() },
-                onNavigateToSignIn = {  navController.navigate("sign_in") },
-                onSendOTP = {  navController.navigate("send_otp") },
+                onNavigateToSignIn = { navController.navigate("sign_in") },
+                onSendOTP = { navController.navigate("send_otp") },
             )
         }
         composable("sign_in") {
             SignInScreen(
-                onRegisterClick =  {  navController.navigate("register_account") },
+                onRegisterClick = { navController.navigate("register_account") },
                 onBackClick = { navController.popBackStack() },
-                onSignInClick = {  navController.navigate("register_account") },
-                resetPassword = {  navController.navigate("forgot_passwd") }
+                onSignInClick = { navController.navigate("home") },
+                resetPassword = { navController.navigate("forgot_passwd") }
             )
         }
         composable("send_otp") {
             VerificationScreen(
                 onBackClick = { navController.popBackStack() },
-                onVerificationSuccess = {  navController.navigate("sign_in") }
+                onVerificationSuccess = { navController.navigate("home") }
             )
         }
+        composable("onboard") {
+            OnboardingScreen(
+                onFinish = { navController.navigate("register_account") }
+            )
+        }
+        composable("home") {
+            HomeScreen(
+                onProductClick = { product ->
+                    navController.navigate("details/${product.id}")
+                },
+                onCartClick = {},
+                onSearchClick = {},
+                onSettingsClick = {},
+                onCategoryClick = { id, title ->
+                    navController.navigate("catalog/$id/$title")
+                },
+                favouriteViewModel = favouriteViewModel
+            )
+        }
+
         composable("forgot_passwd") {
-            ForgotPasswordScreen()
+            ForgotPasswordScreen(
+                onEmailSaved = { navController.navigate("reset_otp") }
+            )
+        }
+
+        composable("reset_otp") {
+            ResetPasswordOTPScreen(
+                onBackClick = { navController.popBackStack() },
+                onVerificationSuccess = { navController.navigate("new_password") }
+            )
+        }
+        composable("new_password") {
+            CreateNewPasswordScreen(
+                onBackClick = { navController.popBackStack() },
+                onPasswordChanged = { navController.navigate("sign_in") }
+            )
+        }
+
+        composable(
+            route = "catalog/{categoryId}/{categoryName}"
+        ) { backStackEntry ->
+            val categoryId = backStackEntry.arguments?.getString("categoryId") ?: ""
+            val categoryName = backStackEntry.arguments?.getString("categoryName") ?: ""
+
+            CatalogScreen(
+                categoryId = categoryId,
+                categoryName = categoryName,
+                onBackClick = { navController.popBackStack() },
+                onProductClick = { product ->
+                    navController.navigate("details/${product.id}")
+                },
+                favouriteViewModel = favouriteViewModel
+            )
+        }
+
+        composable(
+            route = "details/{productId}",
+            arguments = listOf(
+                navArgument("productId") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val id = backStackEntry.arguments?.getString("productId")!!
+            DetailsScreen(
+                productId = id,
+                onBackClick = { navController.popBackStack() },
+                favouriteViewModel = favouriteViewModel
+            )
         }
     }
 }

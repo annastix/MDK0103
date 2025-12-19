@@ -18,6 +18,7 @@ data class RegisterAccountUiState(
 )
 
 class RegisterAccountViewModel : ViewModel() {
+
     private val _uiState = MutableStateFlow(RegisterAccountUiState())
     val uiState: StateFlow<RegisterAccountUiState> = _uiState
 
@@ -38,7 +39,6 @@ class RegisterAccountViewModel : ViewModel() {
         isPolicyAccepted: Boolean,
         onSuccess: () -> Unit
     ) {
-        // Валидация
         val validationError = validateFields(name, email, password, isPolicyAccepted)
         if (validationError != null) {
             _uiState.update { it.copy(errorMessage = validationError) }
@@ -52,18 +52,19 @@ class RegisterAccountViewModel : ViewModel() {
                 val signUpData = RegisterRequest(email, password)
                 val response = RetrofitInstance.userManagementService.signUp(signUpData)
 
-                // ДОБАВЬТЕ ЛОГИРОВАНИЕ
                 Log.d("RegisterViewModel", "Response code: ${response.code()}")
                 Log.d("RegisterViewModel", "Response message: ${response.message()}")
                 Log.d("RegisterViewModel", "Response body: ${response.body()}")
-                Log.d("RegisterViewModel", "Response error body: ${response.errorBody()?.string()}")
+                Log.d(
+                    "RegisterViewModel",
+                    "Response error body: ${response.errorBody()?.string()}"
+                )
 
                 if (response.isSuccessful && response.body() != null) {
-                    // Сохраняем данные
-                    saveCredentialsToSharedPreferences(context, email, password)
+                    // userId есть в response.body()?.id, если понадобится
+                    saveCredentialsToSharedPreferences(context, name, email, password)
                     onSuccess()
                 } else {
-                    // ПОЛУЧАЕМ ТЕКСТ ОШИБКИ ОТ СЕРВЕРА
                     val errorBody = response.errorBody()?.string()
                     val errorMessage = when (response.code()) {
                         422 -> {
@@ -97,25 +98,23 @@ class RegisterAccountViewModel : ViewModel() {
     ): String? {
         return when {
             name.isEmpty() -> "Имя не может быть пустым"
-
             email.isEmpty() -> "Email не может быть пустым"
             !EMAIL_PATTERN.matcher(email).matches() -> "Некорректный формат email"
-
             password.isEmpty() -> "Пароль не может быть пустым"
-
             !isPolicyAccepted -> "Необходимо согласиться с политикой конфиденциальности"
-
             else -> null
         }
     }
 
     private fun saveCredentialsToSharedPreferences(
         context: Context,
+        name: String,
         email: String,
         password: String
     ) {
         context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
             .edit()
+            .putString("user_name", name)
             .putString("user_email", email)
             .putString("user_password", password)
             .putBoolean("is_user_verified", false)

@@ -155,22 +155,22 @@ fun VerificationScreen(
         Spacer(modifier = Modifier.weight(1f))
 
         // Кнопка повторной отправки OTP
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            TextButton(
-                onClick = {
-                    Toast.makeText(context, "Запрос на повторную отправку OTP", Toast.LENGTH_SHORT).show()
-                }
-            ) {
-                Text(
-                    text = "Отправить код повторно",
-                    color = colorResource(R.color.Accent),
-                    style = Typography.bodyMedium
-                )
-            }
-        }
+//        Row(
+//            modifier = Modifier.fillMaxWidth(),
+//            horizontalArrangement = Arrangement.Center
+//        ) {
+//            TextButton(
+//                onClick = {
+//                    Toast.makeText(context, "Запрос на повторную отправку OTP", Toast.LENGTH_SHORT).show()
+//                }
+//            ) {
+//                Text(
+//                    text = "Отправить код повторно",
+//                    color = colorResource(R.color.Accent),
+//                    style = Typography.bodyMedium
+//                )
+//            }
+//        }
     }
 }
 @Preview
