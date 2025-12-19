@@ -29,35 +29,60 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.rememberAsyncImagePainter
-import com.example.shoesshop.ui.theme.AppTypography
 import com.example.shoesshop.R
+import com.example.shoesshop.data.viewModel.ProfileUiState
+import com.example.shoesshop.data.viewModel.ProfileViewModel
 import com.example.shoesshop.ui.components.RegisterButton
 import com.example.shoesshop.ui.theme.Typography
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import kotlin.text.isNotEmpty
 
 @Composable
-fun ProfileScreen() {
+fun ProfileScreen(
+    viewModel: ProfileViewModel = viewModel()
+) {
+    val context = LocalContext.current
+    val uiState: ProfileUiState by viewModel.uiState.collectAsStateWithLifecycle()
+
     var isEditing by remember { mutableStateOf(false) }
-    var name by remember { mutableStateOf("Еmmanuel") }
-    var lastName by remember { mutableStateOf("Oyiboke") }
-    var address by remember { mutableStateOf("Nigeria") }
+    var name by remember { mutableStateOf("") }
+    var lastName by remember { mutableStateOf("") }
+    var address by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
 
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var tempPhotoFile by remember { mutableStateOf<File?>(null) }
 
-    // Проверка, изменились ли данные
-    val hasChanges by remember(name, lastName, address, phone, selectedImageUri) {
-        derivedStateOf {
-            name != "Еmmanuel" || lastName != "Oyiboke" || address != "Nigeria" || phone != "" || selectedImageUri != null
+    // первый запуск – загрузить профиль
+    LaunchedEffect(Unit) {
+        viewModel.loadProfile(context)
+    }
+
+    // когда профиль пришёл – заполнить поля
+    LaunchedEffect(uiState.profile) {
+        uiState.profile?.let { p ->
+            name = p.firstname ?: ""
+            lastName = p.lastname ?: ""
+            address = p.address ?: ""
+            phone = p.phone ?: ""
         }
     }
-    val context = LocalContext.current
+
+    // проверка изменений относительно текущего профиля
+    val hasChanges by remember(name, lastName, address, phone, selectedImageUri, uiState.profile) {
+        derivedStateOf {
+            val p = uiState.profile
+            name != (p?.firstname ?: "") ||
+                    lastName != (p?.lastname ?: "") ||
+                    address != (p?.address ?: "") ||
+                    phone != (p?.phone ?: "")
+        }
+    }
 
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture(),
@@ -143,24 +168,23 @@ fun ProfileScreen() {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Пустое место для балансировки
                 Spacer(modifier = Modifier.size(40.dp))
-                // Заголовок по центру
                 Text(
                     text = stringResource(id = R.string.profile),
                     style = Typography.titleSmall,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.weight(1f)
                 )
-                // Кнопка редактирования/отмены
                 IconButton(
                     onClick = {
                         if (isEditing) {
-                            // Отмена редактирования - возвращаем оригинальные значения
-                            name = "Еmmanuel"
-                            lastName = "Oyiboke"
-                            address = "Nigeria"
-                            phone = ""
+                            // откат к данным из профиля
+                            uiState.profile?.let { p ->
+                                name = p.firstname ?: ""
+                                lastName = p.lastname ?: ""
+                                address = p.address ?: ""
+                                phone = p.phone ?: ""
+                            }
                         }
                         isEditing = !isEditing
                     },
@@ -170,11 +194,9 @@ fun ProfileScreen() {
                         modifier = Modifier
                             .clip(CircleShape)
                             .background(colorResource(R.color.Accent))
-                            .size(25.dp) // Общий размер фона
+                            .size(25.dp)
                             .padding(4.dp),
-                        painter = painterResource(id =
-                            if (isEditing) R.drawable.edit else R.drawable.edit
-                        ),
+                        painter = painterResource(id = R.drawable.edit),
                         contentDescription = if (isEditing) "Отмена" else "Редактировать",
                         tint = colorResource(R.color.white)
                     )
@@ -208,9 +230,11 @@ fun ProfileScreen() {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Имя пользователя
                 Text(
-                    text = "Еmmanuel Oyiboke",
+                    text = if (name.isNotEmpty() || lastName.isNotEmpty())
+                        "$name $lastName"
+                    else
+                        stringResource(R.string.profile),
                     style = Typography.bodyMedium
                 )
             }
@@ -232,7 +256,7 @@ fun ProfileScreen() {
             }
 
             Spacer(modifier = Modifier.height(35.dp))
-            // Поля профиля
+
             Column(
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -273,17 +297,23 @@ fun ProfileScreen() {
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // Кнопка сохранения (только в режиме редактирования)
             if (isEditing) {
                 RegisterButton(
                     text = stringResource(R.string.save_now),
                     onClick = {
-                        // Здесь логика сохранения данных
+                        viewModel.saveProfile(
+                            context = context,
+                            firstname = name,
+                            lastname = lastName,
+                            address = address,
+                            phone = phone
+                        )
+                        isEditing = false
                     },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
-                    enabled = hasChanges // Кнопка активна только если есть изменения
+                    enabled = hasChanges
                 )
             }
         }
@@ -298,7 +328,6 @@ private fun InputField(
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
-        // Подпись
         Text(
             text = label,
             style = Typography.labelMedium.copy(
@@ -306,8 +335,6 @@ private fun InputField(
             ),
             modifier = Modifier.padding(bottom = 8.dp)
         )
-
-        // Поле (non-editable)
         Surface(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(8.dp),
@@ -341,7 +368,6 @@ private fun EditableField(
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
-        // Подпись
         Text(
             text = label,
             style = Typography.labelMedium.copy(
@@ -349,8 +375,6 @@ private fun EditableField(
             ),
             modifier = Modifier.padding(bottom = 8.dp)
         )
-
-        // Поле для редактирования
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,

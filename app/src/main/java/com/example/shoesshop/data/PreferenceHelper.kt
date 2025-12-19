@@ -2,6 +2,8 @@ package com.example.shoesshop.data
 
 import android.content.Context
 import android.util.Log
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 
 private const val PREF_NAME = "shoe_shop_prefs"
 private const val KEY_RESET_EMAIL = "reset_email"
@@ -13,6 +15,7 @@ private const val KEY_USER_EMAIL = "user_email"
 private const val KEY_IS_LOGGED_IN = "is_logged_in"
 private const val KEY_LOGIN_TIME = "login_time"
 
+private const val SECURE_PREF_NAME = "secure_user_prefs"
 object PreferenceHelper {
 
     private fun prefs(context: Context) =
@@ -56,24 +59,33 @@ object PreferenceHelper {
         Log.d("PreferenceHelper", "User saved: id=$userId, email=$email")
     }
 
+    private fun securePrefs(context: Context): android.content.SharedPreferences {
+        val masterKey = MasterKey.Builder(context)
+            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+            .build()
+
+        return EncryptedSharedPreferences.create(
+            context,
+            SECURE_PREF_NAME,
+            masterKey,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+    }
+
     fun getUserId(context: Context): String? =
-        prefs(context).getString(KEY_USER_ID, null)
+        securePrefs(context).getString(KEY_USER_ID, null)
 
     fun getUserEmail(context: Context): String? =
-        prefs(context).getString(KEY_USER_EMAIL, null)
+        securePrefs(context).getString("user_email", null)
 
     fun isLoggedIn(context: Context): Boolean =
-        prefs(context).getBoolean(KEY_IS_LOGGED_IN, false)
+        securePrefs(context).getBoolean("is_logged_in", false)
+
+    fun logout(context: Context) {
+        securePrefs(context).edit().clear().apply()
+    }
 
     fun getLoginTime(context: Context): Long =
         prefs(context).getLong(KEY_LOGIN_TIME, 0L)
-
-    fun logout(context: Context) {
-        prefs(context).edit()
-            .remove(KEY_USER_ID)
-            .remove(KEY_USER_EMAIL)
-            .putBoolean(KEY_IS_LOGGED_IN, false)
-            .apply()
-        Log.d("PreferenceHelper", "Пользователь вышел из системы")
-    }
 }
