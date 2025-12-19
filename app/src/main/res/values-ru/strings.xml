@@ -4,7 +4,7 @@
     <string name="welcome">Добро пожаловать</string>
     <string name="journey">Начнем путешествие</string>
     <string name="collection">Умная, великолепная и модная коллекция Изучите сейчас</string>
-    <string name="power">У вас есть сила, чтобы</string>
+    <string name="power">У вас есть сила, Чтобы</string>
     <string name="plants">В вашей комнате много красивых и привлекательных растений</string>
     <string name="hello_again">Привет!</string>
     <string name="details">Заполните Свои Данные</string>
@@ -33,9 +33,9 @@
     <string name="otp_verification">OTP проверка</string>
     <string name="check_email_please">Пожалуйста, проверьте свою электронную почту, чтобы увидеть код подтверждения</string>
     <string name="otp_code">OTP Код</string>
-    <string name="set_new_passwd">задать новый пароль</string>
+    <string name="set_new_passwd">Задать Новый Пароль</string>
     <string name="set_new_passwd_to_account">Установите новый пароль для входа в вашу учетную запись</string>
-    <string name="confirm_passwd">подтверждение пароля</string>
+    <string name="confirm_passwd">Подтверждение пароля</string>
     <string name="main">Главная</string>
     <string name="search">Поиск</string>
     <string name="category">Категории</string>
@@ -44,7 +44,7 @@
     <string name="arrivals">Акции</string>
     <string name="favourite">Избранное</string>
     <string name="cart">Корзина</string>
-    <string name="items">товара</string>
+    <string name="items"> товара</string>
     <string name="sum">Сумма</string>
     <string name="delivery">Доставка</string>
     <string name="total_cost">Итого</string>
@@ -58,6 +58,7 @@
     <string name="view_map">Посмотреть на карте</string>
     <string name="recent">Недавний</string>
 
+    <string name="back">Назад</string>
     <string name="yesterday">Вчера</string>
     <string name="more_details">Подробнее</string>
     <string name="added_to_cart">Добавлено</string>
@@ -73,7 +74,9 @@
     <string name="your_name">Имя</string>
     <string name="lastname">Фамилия</string>
     <string name="save_now">Сохранить</string>
-    <string name="confirm">подтвердить</string>
+    <string name="confirm">Подтвердить</string>
     <string name="map">карта</string>
+    <string name="cancel">Отмена</string>
+    <string name="ok">ОК</string>
     <string name="loyalty_card">карта лояльности</string>
 </resources>
