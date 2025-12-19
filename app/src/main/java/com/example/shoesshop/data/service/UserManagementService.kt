@@ -5,6 +5,7 @@ import com.example.shoesshop.data.models.ForgotPasswordRequest
 import com.example.shoesshop.data.models.RegisterRequest
 import com.example.shoesshop.data.models.RegisterResponse
 import com.example.shoesshop.data.models.SignInRequest
+import com.example.shoesshop.data.models.SignInResponse
 import com.example.shoesshop.data.models.UpdatePasswordRequest
 import com.example.shoesshop.data.models.VerifyOTPRequest
 import com.example.shoesshop.data.models.VerifyOTPResponse
@@ -25,9 +26,12 @@ interface UserManagementService {
         @Body signUpRequest: RegisterRequest
     ): Response<RegisterResponse>
 
-    @Headers("apikey: $API_KEY", "Content-Type: application/json")
-    @POST("auth/v1/token?grant_type=password")
-    suspend fun signIn(@Body signInRequest: SignInRequest): Response<SignInRequest>
+
+    @POST("/auth/v1/token?grant_type=password")
+    suspend fun signIn(
+        @Body body: SignInRequest
+    ): retrofit2.Response<SignInResponse>
+
 
     @Headers("apikey: $API_KEY", "Content-Type: application/json")
     @POST("auth/v1/verify")

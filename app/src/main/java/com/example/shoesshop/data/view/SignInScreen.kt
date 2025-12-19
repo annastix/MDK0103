@@ -33,15 +33,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.shoesshop.ui.components.BackButton
 import com.example.shoesshop.R
 import com.example.shoesshop.data.viewModel.SignInViewModel
 import com.example.shoesshop.ui.components.AlertMessage
+import com.example.shoesshop.ui.components.BackButton
 import com.example.shoesshop.ui.components.InputTextBox
 import com.example.shoesshop.ui.components.PasswordInputTextBox
 import com.example.shoesshop.ui.components.RegisterButton
 import com.example.shoesshop.ui.theme.Typography
-import kotlinx.coroutines.delay
 
 @Composable
 fun SignInScreen(
@@ -52,33 +51,29 @@ fun SignInScreen(
     onRegisterClick: () -> Unit = {},
     onSignInClick: () -> Unit = {}
 ) {
-    // Следим за состоянием из ViewModel
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // Локальные состояния для полей ввода
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
-    // Состояние для отображения AlertDialog
     var showErrorDialog by remember { mutableStateOf(false) }
     var errorDialogMessage by remember { mutableStateOf("") }
 
     val context = LocalContext.current
 
-    // Обработка ошибок из ViewModel
+    // показываем диалог, когда во ViewModel пришла ошибка
     LaunchedEffect(uiState.errorMessage) {
-        if (uiState.errorMessage != null) {
-            errorDialogMessage = uiState.errorMessage ?: "Произошла ошибка"
+        uiState.errorMessage?.let { msg ->
+            errorDialogMessage = msg
             showErrorDialog = true
         }
     }
 
-    // AlertDialog для отображения ошибок
     if (showErrorDialog) {
         AlertMessage(
             title = "Ошибка",
             description = errorDialogMessage,
-            showCancelButton = false, // Только кнопка OK
+            showCancelButton = false,
             onCancelClick = {
                 showErrorDialog = false
                 viewModel.clearError()
@@ -91,20 +86,20 @@ fun SignInScreen(
     }
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .background(colorResource(R.color.white))
             .fillMaxSize()
             .padding(horizontal = 20.dp),
         verticalArrangement = Arrangement.Center
     ) {
         Spacer(modifier = Modifier.weight(0.5f))
-        BackButton(
-            onClick = onBackClick
-        )
+
+        BackButton(onClick = onBackClick)
+
         Spacer(modifier = Modifier.height(21.dp))
+
         Column(
-            modifier = Modifier
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
@@ -157,11 +152,8 @@ fun SignInScreen(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.End
         ) {
-            TextButton(
-                onClick = resetPassword
-            ) {
+            TextButton(onClick = resetPassword) {
                 Text(
-                    modifier = Modifier,
                     text = stringResource(R.string.recovery),
                     color = colorResource(R.color.SubTextDark),
                     style = Typography.displaySmall
@@ -171,9 +163,7 @@ fun SignInScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Показываем индикатор загрузки
         if (uiState.isLoading) {
-            // Ваш индикатор загрузки
             CircularProgressIndicator(
                 modifier = Modifier
                     .size(48.dp)
@@ -191,11 +181,10 @@ fun SignInScreen(
                         email = email,
                         password = password,
                         onSuccess = {
-                            // Успешный вход
                             onSignInClick()
                         },
                         onError = { errorMessage ->
-                            // Ошибка уже обработана в ViewModel через showError()
+                            // уже пришло в uiState.errorMessage, сюда просто лог
                             Log.e("SignInScreen", "Error from callback: $errorMessage")
                         }
                     )
@@ -206,8 +195,10 @@ fun SignInScreen(
         Spacer(modifier = Modifier.weight(1f))
 
         Row(
-            modifier = Modifier.fillMaxWidth().padding(bottom = 47.dp),
-            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 47.dp),
+            horizontalArrangement = Arrangement.Center
         ) {
             TextButton(
                 onClick = onRegisterClick,
@@ -229,7 +220,7 @@ fun SignInScreen(
                             style = SpanStyle(
                                 color = colorResource(R.color.Text),
                                 fontFamily = Typography.bodySmall.fontFamily,
-                                fontSize = Typography.bodySmall.fontSize,
+                                fontSize = Typography.bodySmall.fontSize
                             )
                         ) {
                             append(stringResource(id = R.string.create_account))
@@ -240,6 +231,7 @@ fun SignInScreen(
         }
     }
 }
+
 @Preview
 @Composable
 private fun SignInScreenPreview() {
