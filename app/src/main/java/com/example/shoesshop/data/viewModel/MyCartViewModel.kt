@@ -23,6 +23,14 @@ data class CartScreenUiState(
     val items: List<CartItemUi> = emptyList()
 )
 
+/** Элементы корзины в формате, удобном для orders_items. */
+data class CartItemForOrder(
+    val productId: String,
+    val title: String,
+    val cost: Double,
+    val count: Int
+)
+
 class CartViewModel : ViewModel() {
 
     private val cartApi = RetrofitInstance.cartService
@@ -56,6 +64,7 @@ class CartViewModel : ViewModel() {
                 val mapped = list.map { dto ->
                     CartItemUi(
                         cartId = dto.id,
+                        productId = dto.productId ?: "",
                         title = dto.products?.title.orEmpty(),
                         price = dto.products?.cost ?: 0.0,
                         imageResId = ProductImages.forId(dto.productId ?: ""),
@@ -79,7 +88,7 @@ class CartViewModel : ViewModel() {
         }
     }
 
-    // ------- изменение количества с обновлением БД -------
+    // ------- изменение количества -------
 
     fun increase(cartId: String) {
         val current = _uiState.value.items.find { it.cartId == cartId } ?: return
@@ -119,7 +128,7 @@ class CartViewModel : ViewModel() {
         }
     }
 
-    // ------- удаление позиции -------
+    // ------- удаление -------
 
     fun remove(cartId: String) {
         val removed = _uiState.value.items.find { it.cartId == cartId }
@@ -127,7 +136,7 @@ class CartViewModel : ViewModel() {
             items = _uiState.value.items.filterNot { it.cartId == cartId }
         )
         if (removed != null) {
-            _productIdsInCart.value = _productIdsInCart.value - removed.cartId
+            _productIdsInCart.value = _productIdsInCart.value - removed.productId
         }
 
         viewModelScope.launch {
@@ -143,12 +152,10 @@ class CartViewModel : ViewModel() {
         }
     }
 
-    // ------- добавление товара в корзину -------
+    // ------- добавление товара -------
 
     fun addToCart(context: Context, product: Products) {
         val userId = getSavedUserId(context) ?: return
-
-        // если уже в корзине – просто ничего не делаем (UI сам откроет корзину)
         if (_productIdsInCart.value.contains(product.id)) return
 
         viewModelScope.launch {
@@ -170,9 +177,9 @@ class CartViewModel : ViewModel() {
         }
     }
 
-    // ------- чтение user_id из EncryptedSharedPreferences -------
+    // ------- user_id -------
 
-    private fun getSavedUserId(context: Context): String? {
+    fun getSavedUserId(context: Context): String? {
         return try {
             val masterKey = MasterKey.Builder(context)
                 .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
@@ -194,4 +201,35 @@ class CartViewModel : ViewModel() {
                 .getString("user_id", null)
         }
     }
+
+    // ------- данные для Checkout -------
+
+    fun currentCartItems(): List<CartItemForOrder> {
+        return _uiState.value.items.map {
+            CartItemForOrder(
+                productId = it.productId,
+                title = it.title,
+                cost = it.price,
+                count = it.count
+            )
+        }
+    }
+
+
+    suspend fun clearCartOnServer(userId: String) {
+        runCatching {
+            cartApi.deleteCartByUser(
+                auth = "Bearer $API_KEY",
+                apiKey = API_KEY,
+                userIdFilter = "eq.$userId"
+            )
+        }.onFailure { e ->
+            Log.e("CartViewModel", "clearCartOnServer error", e)
+            return
+        }
+
+        _uiState.value = _uiState.value.copy(items = emptyList())
+        _productIdsInCart.value = emptySet()
+    }
+
 }

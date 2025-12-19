@@ -1,10 +1,12 @@
 package com.example.shoesshop.data
 
+import android.util.Log
 import com.example.shoesshop.data.service.API_KEY
 import com.example.shoesshop.data.service.CartService
 import com.example.shoesshop.data.service.DatabaseProduct
 import com.example.shoesshop.data.service.DatabaseService
 import com.example.shoesshop.data.service.FavouriteService
+import com.example.shoesshop.data.service.OrdersService
 import com.example.shoesshop.data.service.ProfileService
 import com.example.shoesshop.data.service.UserManagementService
 import okhttp3.OkHttpClient
@@ -42,12 +44,22 @@ object RetrofitInstance {
                 requestBuilder.header("apikey", API_KEY)
             }
 
-            chain.proceed(requestBuilder.build())
+            val request = requestBuilder.build()
+
+            // Простейший лог (нужен import android.util.Log)
+            android.util.Log.d("RETROFIT", "REQUEST: ${request.method} ${request.url}")
+
+            val response = chain.proceed(request)
+
+            android.util.Log.d("RETROFIT", "RESPONSE: ${response.code} ${response.message}")
+
+            response
         }
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
         .writeTimeout(30, TimeUnit.SECONDS)
         .build()
+
 
     private val retrofitAuth: Retrofit = Retrofit.Builder()
         .baseUrl(SUBABASE_URL)
@@ -67,22 +79,11 @@ object RetrofitInstance {
         .client(client)
         .build()
 
-    val userManagementService: UserManagementService =
-        retrofitAuth.create(UserManagementService::class.java)
-
-    val databaseService: DatabaseService =
-        retrofitRest.create(DatabaseService::class.java)
-
-    val productsService: DatabaseProduct =
-        retrofitRest.create(DatabaseProduct::class.java)
-
-    val profileService: ProfileService =
-        retrofitRest.create(ProfileService::class.java)
-
-    val favouriteService: FavouriteService =
-        retrofitRest.create(FavouriteService::class.java)
-
-    val cartService: CartService =
-        retrofitRest.create(CartService::class.java)
-
+    val userManagementService: UserManagementService = retrofitAuth.create(UserManagementService::class.java)
+    val databaseService: DatabaseService = retrofitRest.create(DatabaseService::class.java)
+    val productsService: DatabaseProduct = retrofitRest.create(DatabaseProduct::class.java)
+    val profileService: ProfileService = retrofitRest.create(ProfileService::class.java)
+    val favouriteService: FavouriteService = retrofitRest.create(FavouriteService::class.java)
+    val cartService: CartService = retrofitRest.create(CartService::class.java)
+    val ordersService: OrdersService = retrofitRest.create(OrdersService::class.java)
 }

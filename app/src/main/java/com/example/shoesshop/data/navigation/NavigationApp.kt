@@ -1,6 +1,7 @@
 package com.example.shoesshop.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -9,6 +10,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.shoesshop.data.view.CatalogScreen
+import com.example.shoesshop.data.view.CheckoutScreen
 import com.example.shoesshop.data.view.CreateNewPasswordScreen
 import com.example.shoesshop.data.view.DetailsScreen
 import com.example.shoesshop.data.view.ForgotPasswordScreen
@@ -19,6 +21,7 @@ import com.example.shoesshop.data.view.RegisterAccount
 import com.example.shoesshop.data.view.ResetPasswordOTPScreen
 import com.example.shoesshop.data.view.SignInScreen
 import com.example.shoesshop.data.view.VerificationScreen
+import com.example.shoesshop.data.viewModel.CartViewModel
 import com.example.shoesshop.data.viewModel.FavouriteViewModel
 import com.example.shoesshop.data.viewModel.RegisterAccountViewModel
 
@@ -28,6 +31,7 @@ fun NavigationApp(
 ) {
     val registerAccountViewModel: RegisterAccountViewModel = viewModel()
     val favouriteViewModel: FavouriteViewModel = viewModel()
+    val cartViewModel: CartViewModel = viewModel()
 
     val favouriteUiState = favouriteViewModel.uiState.collectAsStateWithLifecycle()
     val favouriteIds = favouriteUiState.value.products.map { it.id }.toSet()
@@ -135,7 +139,35 @@ fun NavigationApp(
 
         composable("my_cart") {
             MyCartScreen(
-                onBackClick =  { navController.navigate("home") }
+                onBackClick = { navController.navigate("home") },
+                viewModel = cartViewModel,
+                onCheckoutClick = { subtotal, delivery ->
+                    navController.navigate("checkout/$subtotal/$delivery")
+                }
+            )
+        }
+
+        composable(
+            route = "checkout/{subtotal}/{delivery}",
+            arguments = listOf(
+                navArgument("subtotal") { type = NavType.FloatType },
+                navArgument("delivery") { type = NavType.FloatType }
+            )
+        ) { backStackEntry ->
+            val context = LocalContext.current
+            val userId = cartViewModel.getSavedUserId(context)
+
+            val subtotal = backStackEntry.arguments!!.getFloat("subtotal").toDouble()
+            val delivery = backStackEntry.arguments!!.getFloat("delivery").toDouble()
+
+            CheckoutScreen(
+                onBackClick = { navController.popBackStack() },
+                onBackToHome = { navController.navigate("home") },
+                userId = userId,
+                paymentId = null,
+                totalAmount = subtotal,
+                deliveryPrice = delivery,
+                cartViewModel = cartViewModel
             )
         }
     }

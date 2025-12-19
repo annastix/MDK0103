@@ -67,4 +67,12 @@ interface CartService {
         @Header("apikey") apiKey: String,
         @Body body: CartInsertRequest
     ): Response<Unit>
+
+    @DELETE("cart")
+    suspend fun deleteCartByUser(
+        @Header("Authorization") auth: String,
+        @Header("apikey") apiKey: String,
+        @Query("user_id") userIdFilter: String // "eq.<userId>"
+    )
+
 }

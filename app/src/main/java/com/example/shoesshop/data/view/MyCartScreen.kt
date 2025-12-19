@@ -37,6 +37,7 @@ import androidx.compose.ui.platform.LocalDensity
 
 data class CartItemUi(
     val cartId: String,
+    val productId: String,
     val title: String,
     val price: Double,
     val imageResId: Int,
@@ -46,8 +47,8 @@ data class CartItemUi(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyCartScreen(
-    onBackClick: () -> Unit = {},
-    viewModel: CartViewModel = viewModel()
+    onBackClick: () -> Unit = {},viewModel: CartViewModel,
+    onCheckoutClick: (subtotal: Double, delivery: Double) -> Unit = { _, _ -> }
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
@@ -87,7 +88,12 @@ fun MyCartScreen(
             )
         },
         containerColor = colorResource(R.color.Background),
-        bottomBar = { CartSummaryBar(uiState.items) }
+        bottomBar = {
+            CartSummaryBar(
+                items = uiState.items,
+                onCheckoutClick = onCheckoutClick
+            )
+        }
     ) { padding ->
         Column(
             modifier = Modifier
@@ -316,7 +322,8 @@ fun CartCountButtons(
 }
 
 @Composable
-fun CartSummaryBar(items: List<CartItemUi>) {
+fun CartSummaryBar(items: List<CartItemUi>,
+                   onCheckoutClick: (subtotal: Double, delivery: Double) -> Unit) {
     val subtotal = items.sumOf { it.price * it.count }
     val delivery = if (items.isEmpty()) 0.0 else 60.20
     val total = subtotal + delivery
@@ -376,7 +383,7 @@ fun CartSummaryBar(items: List<CartItemUi>) {
             }
             Spacer(modifier = Modifier.height(12.dp))
             Button(
-                onClick = { },
+                onClick = { onCheckoutClick(subtotal, delivery) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp),
@@ -420,8 +427,8 @@ fun DashedDivider(
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-private fun CartScreenPreview() {
-    MyCartScreen()
-}
+//@Preview(showBackground = true, showSystemUi = true)
+//@Composable
+//private fun CartScreenPreview() {
+//    MyCartScreen()
+//}
