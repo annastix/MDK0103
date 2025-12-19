@@ -13,6 +13,7 @@ import com.example.shoesshop.data.view.CreateNewPasswordScreen
 import com.example.shoesshop.data.view.DetailsScreen
 import com.example.shoesshop.data.view.ForgotPasswordScreen
 import com.example.shoesshop.data.view.HomeScreen
+import com.example.shoesshop.data.view.MyCartScreen
 import com.example.shoesshop.data.view.OnboardingScreen
 import com.example.shoesshop.data.view.RegisterAccount
 import com.example.shoesshop.data.view.ResetPasswordOTPScreen
@@ -28,7 +29,6 @@ fun NavigationApp(
     val registerAccountViewModel: RegisterAccountViewModel = viewModel()
     val favouriteViewModel: FavouriteViewModel = viewModel()
 
-    // если нужно, можно подписаться на избранное тут
     val favouriteUiState = favouriteViewModel.uiState.collectAsStateWithLifecycle()
     val favouriteIds = favouriteUiState.value.products.map { it.id }.toSet()
 
@@ -68,7 +68,9 @@ fun NavigationApp(
                 onProductClick = { product ->
                     navController.navigate("details/${product.id}")
                 },
-                onCartClick = {},
+                onCartClick = {
+                    navController.navigate("my_cart")   // ← переход в корзину
+                },
                 onSearchClick = {},
                 onSettingsClick = {},
                 onCategoryClick = { id, title ->
@@ -125,6 +127,12 @@ fun NavigationApp(
                 productId = id,
                 onBackClick = { navController.popBackStack() },
                 favouriteViewModel = favouriteViewModel
+            )
+        }
+
+        composable("my_cart") {
+            MyCartScreen(
+                onBackClick =  { navController.navigate("home") }
             )
         }
     }

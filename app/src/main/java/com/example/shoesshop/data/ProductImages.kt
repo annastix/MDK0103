@@ -23,4 +23,5 @@ object ProductImages {
     fun forId(id: String): Int =
         map[id]
             ?: R.drawable.nike_zoom_winflo_3_831561_001_mens_running_shoes_11550187236tiyyje6l87_prev_ui_3
+
 }

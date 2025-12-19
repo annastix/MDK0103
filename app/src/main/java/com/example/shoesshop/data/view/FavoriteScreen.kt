@@ -127,7 +127,8 @@ fun FavoriteScreen(
                                     currentlyFavourite = true
                                 )
                             },
-                            isFavorite = true
+                            isFavorite = true,
+                            onAddClick = {}
                         )
                     }
                 }

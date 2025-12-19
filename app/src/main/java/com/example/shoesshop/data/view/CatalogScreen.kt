@@ -139,7 +139,8 @@ fun CatalogScreen(
                                 product = product,
                                 currentlyFavourite = isFav
                             )
-                        }
+                        },
+                        onAddClick = {}
                     )
                 }
             }

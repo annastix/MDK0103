@@ -57,6 +57,7 @@ dependencies {
     implementation("com.google.accompanist:accompanist-pager:0.28.0")
     implementation("com.google.accompanist:accompanist-pager-indicators:0.28.0")
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
+    implementation("me.saket.swipe:swipe:1.3.0")
     implementation(libs.compose.material3)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.compose.foundation)

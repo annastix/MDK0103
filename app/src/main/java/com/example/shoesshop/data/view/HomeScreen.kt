@@ -50,9 +50,10 @@ import com.example.shoesshop.ui.theme.Typography
 @Composable
 fun HomeScreen(
     onProductClick: (Products) -> Unit = {},
-    onCartClick: () -> Unit = {},
+    onCartClick: () -> Unit = {},                 // переход в корзину
     onSearchClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
+    onAddClick: () -> Unit = {},
     onCategoryClick: (String, String) -> Unit = { _, _ -> },
     viewModel: HomeViewModel = viewModel(
         factory = HomeViewModelFactory(
@@ -88,7 +89,13 @@ fun HomeScreen(
     }
 
     Scaffold(
-        bottomBar = { BottomBar(selected) { selected = it; if (it == 1) onCartClick() } }
+        bottomBar = {
+            BottomBar(
+                selected = selected,
+                onSelectedChange = { selected = it },
+                onCartClick = onCartClick          // FAB → корзина
+            )
+        }
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -126,7 +133,8 @@ fun HomeScreen(
                                     products = uiProductsState,
                                     onProductClick = onProductClick,
                                     onFavoriteClick = { product ->
-                                        val currentlyFavourite = favouriteIds.contains(product.id)
+                                        val currentlyFavourite =
+                                            favouriteIds.contains(product.id)
                                         favouriteViewModel.toggleFavourite(
                                             context = context,
                                             product = product,
@@ -153,7 +161,6 @@ fun HomeScreen(
         }
     }
 }
-
 
 @Composable
 private fun TopBar(onSettingsClick: () -> Unit) {
@@ -184,7 +191,7 @@ private fun TopBar(onSettingsClick: () -> Unit) {
             ) {
                 OutlinedTextField(
                     value = "",
-                    onValueChange = {},
+                    onValueChange = { },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp),
@@ -233,7 +240,11 @@ private fun TopBar(onSettingsClick: () -> Unit) {
 }
 
 @Composable
-private fun BottomBar(selected: Int, onSelectedChange: (Int) -> Unit) {
+private fun BottomBar(
+    selected: Int,
+    onSelectedChange: (Int) -> Unit,
+    onCartClick: () -> Unit
+) {
     Box(
         modifier = Modifier
             .height(80.dp)
@@ -254,12 +265,16 @@ private fun BottomBar(selected: Int, onSelectedChange: (Int) -> Unit) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // слева: Home + Favorites
             Row {
                 IconButton(onClick = { onSelectedChange(0) }) {
                     Icon(
                         painter = painterResource(id = R.drawable.home),
                         contentDescription = "Home",
-                        tint = if (selected == 0) colorResource(R.color.Accent) else colorResource(R.color.black)
+                        tint = if (selected == 0)
+                            colorResource(R.color.Accent)
+                        else
+                            colorResource(R.color.black)
                     )
                 }
 
@@ -269,11 +284,15 @@ private fun BottomBar(selected: Int, onSelectedChange: (Int) -> Unit) {
                     Icon(
                         painter = painterResource(id = R.drawable.favorite),
                         contentDescription = "Favorites",
-                        tint = if (selected == 1) colorResource(R.color.Accent) else colorResource(R.color.black)
+                        tint = if (selected == 1)
+                            colorResource(R.color.Accent)
+                        else
+                            colorResource(R.color.black)
                     )
                 }
             }
 
+            // центр: корзина (FAB)
             Box(
                 modifier = Modifier
                     .offset(y = (-20).dp)
@@ -281,7 +300,7 @@ private fun BottomBar(selected: Int, onSelectedChange: (Int) -> Unit) {
                 contentAlignment = Alignment.Center
             ) {
                 FloatingActionButton(
-                    onClick = { onSelectedChange(1) },
+                    onClick = { onCartClick() },          // ТОЛЬКО корзина
                     modifier = Modifier.size(56.dp),
                     containerColor = colorResource(R.color.Accent),
                     contentColor = colorResource(R.color.white),
@@ -295,12 +314,16 @@ private fun BottomBar(selected: Int, onSelectedChange: (Int) -> Unit) {
                 }
             }
 
+            // справа: уведомления + профиль
             Row {
                 IconButton(onClick = { onSelectedChange(2) }) {
                     Icon(
                         painter = painterResource(id = R.drawable.notification),
                         contentDescription = "Notification",
-                        tint = if (selected == 2) MaterialTheme.colorScheme.primary else Color.Black
+                        tint = if (selected == 2)
+                            MaterialTheme.colorScheme.primary
+                        else
+                            Color.Black
                     )
                 }
 
@@ -310,7 +333,10 @@ private fun BottomBar(selected: Int, onSelectedChange: (Int) -> Unit) {
                     Icon(
                         painter = painterResource(id = R.drawable.profile),
                         contentDescription = "Profile",
-                        tint = if (selected == 3) MaterialTheme.colorScheme.primary else Color.Black
+                        tint = if (selected == 3)
+                            MaterialTheme.colorScheme.primary
+                        else
+                            Color.Black
                     )
                 }
             }
@@ -399,15 +425,25 @@ private fun ProductsSection(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
             items(products) { product ->
                 val isFav = favouriteIds.contains(product.id)
-                ProductCard(
-                    product = product,
-                    isFavorite = isFav,
-                    onProductClick = { onProductClick(product) },
-                    onFavoriteClick = { onFavoriteClick(product) }
-                )
+
+                Box(
+                    modifier = Modifier
+                        .width(160.dp)   // фиксированная ширина
+                        .height(270.dp)  // фиксированная высота (подбери под дизайн)
+                ) {
+                    ProductCard(
+                        product = product,
+                        isFavorite = isFav,
+                        onProductClick = { onProductClick(product) },
+                        onFavoriteClick = { onFavoriteClick(product) },
+                        onAddClick = { }
+                    )
+                }
             }
         }
     }
@@ -436,8 +472,7 @@ private fun PromotionsSection() {
         }
 
         Image(
-            modifier = Modifier
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             painter = painterResource(R.drawable.summer_sale),
             contentScale = ContentScale.Crop,
             contentDescription = "sale"

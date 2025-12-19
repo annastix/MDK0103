@@ -1,6 +1,7 @@
 package com.example.shoesshop.data
 
 import com.example.shoesshop.data.service.API_KEY
+import com.example.shoesshop.data.service.CartService
 import com.example.shoesshop.data.service.DatabaseProduct
 import com.example.shoesshop.data.service.DatabaseService
 import com.example.shoesshop.data.service.FavouriteService
@@ -19,7 +20,7 @@ object RetrofitInstance {
 
     private const val PROXY_HOST = "10.207.106.71"
     private const val PROXY_PORT = 3128
-    private const val USE_PROXY = true
+    private const val USE_PROXY = false
 
     var client: OkHttpClient = OkHttpClient.Builder()
         .apply {
@@ -80,4 +81,8 @@ object RetrofitInstance {
 
     val favouriteService: FavouriteService =
         retrofitRest.create(FavouriteService::class.java)
+
+    val cartService: CartService =
+        retrofitRest.create(CartService::class.java)
+
 }
