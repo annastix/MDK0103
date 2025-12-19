@@ -9,7 +9,9 @@ import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.example.shoesshop.data.ProductImages
 import com.example.shoesshop.data.RetrofitInstance
+import com.example.shoesshop.data.models.Products
 import com.example.shoesshop.data.service.API_KEY
+import com.example.shoesshop.data.service.CartInsertRequest
 import com.example.shoesshop.data.service.CartUpdateRequest
 import com.example.shoesshop.data.view.CartItemUi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -155,6 +157,26 @@ class CartViewModel : ViewModel() {
         } catch (e: Exception) {
             context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
                 .getString("user_id", null)
+        }
+    }
+
+    fun addToCart(context: Context, product: Products) {
+        val userId = getSavedUserId(context) ?: return
+
+        viewModelScope.launch {
+            runCatching {
+                cartApi.addCartItem(
+                    auth = "Bearer $API_KEY",
+                    apiKey = API_KEY,
+                    body = CartInsertRequest(
+                        userId = userId,
+                        productId = product.id,
+                        count = 1
+                    )
+                )
+            }.onFailure { e ->
+                Log.e("CartViewModel", "addToCart error", e)
+            }
         }
     }
 }

@@ -35,11 +35,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.shoesshop.R
 import com.example.shoesshop.data.models.Categories
 import com.example.shoesshop.data.models.Products
+import com.example.shoesshop.data.viewModel.CartViewModel
 import com.example.shoesshop.data.viewModel.FavouriteViewModel
 import com.example.shoesshop.data.viewModel.HomeViewModel
 import com.example.shoesshop.ui.components.ProductCard
@@ -60,7 +61,8 @@ fun HomeScreen(
             LocalContext.current.applicationContext as Application
         )
     ),
-    favouriteViewModel: FavouriteViewModel = viewModel()
+    favouriteViewModel: FavouriteViewModel = viewModel(),
+    cartViewModel: CartViewModel = viewModel()
 ) {
     var selected by rememberSaveable { mutableIntStateOf(0) }
 
@@ -112,41 +114,54 @@ fun HomeScreen(
             ) {
                 when (selected) {
                     0 -> {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.spacedBy(16.dp),
-                            contentPadding = PaddingValues(16.dp)
-                        ) {
-                            item {
-                                CategorySection(
-                                    categories = categoriesState,
-                                    selectedCategoryId = selectedCategoryId,
-                                    onCategorySelected = { cat ->
-                                        selectedCategoryId = cat.id
-                                        onCategoryClick(cat.id, cat.name)
-                                    }
-                                )
+                        // простая индикация загрузки каталога
+                        if (categoriesState.isEmpty() && uiProductsState.isEmpty()) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator()
                             }
+                        } else {
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize(),
+                                verticalArrangement = Arrangement.spacedBy(16.dp),
+                                contentPadding = PaddingValues(16.dp)
+                            ) {
+                                item {
+                                    CategorySection(
+                                        categories = categoriesState,
+                                        selectedCategoryId = selectedCategoryId,
+                                        onCategorySelected = { cat ->
+                                            selectedCategoryId = cat.id
+                                            onCategoryClick(cat.id, cat.name)
+                                        }
+                                    )
+                                }
 
-                            item {
-                                ProductsSection(
-                                    products = uiProductsState,
-                                    onProductClick = onProductClick,
-                                    onFavoriteClick = { product ->
-                                        val currentlyFavourite =
-                                            favouriteIds.contains(product.id)
-                                        favouriteViewModel.toggleFavourite(
-                                            context = context,
-                                            product = product,
-                                            currentlyFavourite = currentlyFavourite
-                                        )
-                                    },
-                                    favouriteIds = favouriteIds
-                                )
-                            }
+                                item {
+                                    ProductsSection(
+                                        products = uiProductsState,
+                                        onProductClick = onProductClick,
+                                        onFavoriteClick = { product ->
+                                            val currentlyFavourite =
+                                                favouriteIds.contains(product.id)
+                                            favouriteViewModel.toggleFavourite(
+                                                context = context,
+                                                product = product,
+                                                currentlyFavourite = currentlyFavourite
+                                            )
+                                        },
+                                        favouriteIds = favouriteIds,
+                                        onAddClick = { product ->
+                                            cartViewModel.addToCart(context, product)
+                                        }
+                                    )
+                                }
 
-                            item {
-                                PromotionsSection()
+                                item {
+                                    PromotionsSection()
+                                }
                             }
                         }
                     }
@@ -403,7 +418,8 @@ private fun ProductsSection(
     products: List<Products>,
     onProductClick: (Products) -> Unit,
     onFavoriteClick: (Products) -> Unit,
-    favouriteIds: Set<String>
+    favouriteIds: Set<String>,
+    onAddClick: (Products) -> Unit
 ) {
     Column {
         Row(
@@ -441,7 +457,7 @@ private fun ProductsSection(
                         isFavorite = isFav,
                         onProductClick = { onProductClick(product) },
                         onFavoriteClick = { onFavoriteClick(product) },
-                        onAddClick = { }
+                        onAddClick = { onAddClick(product) }
                     )
                 }
             }

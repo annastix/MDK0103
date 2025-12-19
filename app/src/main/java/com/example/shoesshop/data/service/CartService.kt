@@ -7,6 +7,7 @@ import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.PATCH
+import retrofit2.http.POST
 import retrofit2.http.Query
 
 data class CartItemDto(
@@ -24,6 +25,13 @@ data class ProductNestedDto(
 // тело PATCH-запроса для обновления количества
 data class CartUpdateRequest(
     val count: Int
+)
+
+// тело POST-запроса для добавления товара в корзину
+data class CartInsertRequest(
+    @SerializedName("user_id") val userId: String,
+    @SerializedName("product_id") val productId: String,
+    @SerializedName("count") val count: Int = 1
 )
 
 interface CartService {
@@ -51,5 +59,12 @@ interface CartService {
         @Header("Authorization") auth: String,
         @Header("apikey") apiKey: String,
         @Query("id") idFilter: String       // "eq.<cartId>"
+    ): Response<Unit>
+
+    @POST("cart")
+    suspend fun addCartItem(
+        @Header("Authorization") auth: String,
+        @Header("apikey") apiKey: String,
+        @Body body: CartInsertRequest
     ): Response<Unit>
 }
