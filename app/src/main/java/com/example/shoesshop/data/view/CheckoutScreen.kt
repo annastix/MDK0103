@@ -23,6 +23,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.shoesshop.R
 import com.example.shoesshop.data.viewModel.CartViewModel
 import com.example.shoesshop.data.viewModel.CheckoutViewModel
+import com.example.shoesshop.ui.components.OrderSuccessDialog
 import com.example.shoesshop.ui.theme.Typography
 import kotlinx.coroutines.launch
 
@@ -73,9 +74,6 @@ fun CheckoutScreen(
         containerColor = colorResource(R.color.Background),
         topBar = {
             TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = colorResource(R.color.Background)
-                ),
                 modifier = Modifier.padding(start = 21.dp),
                 title = {
                     Text(
@@ -378,50 +376,21 @@ fun CheckoutScreen(
 
         // Диалог подтверждения
         if (isDialogOpen) {
-            AlertDialog(
-                onDismissRequest = {
-                    if (!checkoutViewModel.isSaving) isDialogOpen = false
-                },
-                confirmButton = {},
-                title = null,
-                text = {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = stringResource(R.string.payment_successful),
-                            style = Typography.headlineSmall,
-                            textAlign = TextAlign.Center
+            OrderSuccessDialog(
+                visible = isDialogOpen,
+                onDismiss = { if (!checkoutViewModel.isSaving) isDialogOpen = false },
+                onBackToHome = onBackToHome,
+                isSaving = checkoutViewModel.isSaving,
+                onConfirmClick = {
+                    if (userId != null) {
+                        checkoutViewModel.saveOrder(
+                            email = email,
+                            phone = phone,
+                            address = address,
+                            deliveryCoast = deliveryPrice.toLong(),
+                            userId = userId,
+                            paymentId = paymentId
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Button(
-                            onClick = {
-                                if (!checkoutViewModel.isSaving && userId != null) {
-                                    scope.launch {
-                                        checkoutViewModel.saveOrder(
-                                            email = email,
-                                            phone = phone,
-                                            address = address,
-                                            deliveryCoast = deliveryPrice.toLong(),
-                                            userId = userId,
-                                            paymentId = paymentId
-                                        )
-                                        isDialogOpen = false
-                                        onBackToHome()
-                                    }
-                                }
-                            },
-                            shape = RoundedCornerShape(24.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = colorResource(R.color.Accent)
-                            )
-                        ) {
-                            Text(
-                                text = stringResource(R.string.back_to_shopping),
-                                color = Color.White
-                            )
-                        }
                     }
                 }
             )
