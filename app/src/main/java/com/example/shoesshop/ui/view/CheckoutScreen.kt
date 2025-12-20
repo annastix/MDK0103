@@ -49,15 +49,15 @@ fun CheckoutScreen(
 ) {
     val scope = rememberCoroutineScope()
 
-    var email by remember { mutableStateOf("emmanuel@gmail.com") }
-    var phone by remember { mutableStateOf("+234-811-732-5298") }
+    var email by remember { mutableStateOf("") }
+    var phone by remember { mutableStateOf("") }
 
     var isEditingEmail by remember { mutableStateOf(false) }
     var isEditingPhone by remember { mutableStateOf(false) }
     var isEditingAddress by remember { mutableStateOf(false) }
 
-    val addressFromProfile = "1082 Аэропорт, Нигерии"
-    val addressFromGeo = "Текущая геопозиция"
+    val addressFromProfile = ""
+    val addressFromGeo = ""
     val isLocationEnabled by remember { mutableStateOf(false) }
     var address by remember {
         mutableStateOf(

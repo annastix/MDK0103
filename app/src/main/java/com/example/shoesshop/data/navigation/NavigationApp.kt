@@ -85,7 +85,7 @@ fun NavigationApp(
         composable("send_otp") {
             VerificationScreen(
                 onBackClick = { navController.popBackStack() },
-                onVerificationSuccess = { navController.navigate("home") }
+                onVerificationSuccess = { navController.navigate("sign_in") }
             )
         }
         composable("home") {
